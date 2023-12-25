@@ -1,81 +1,112 @@
 require('dotenv').config()
 const userModel = require('../models/userSchema')
 const jwt = require('jsonwebtoken')
+const bcrypt = require("bcrypt")
+
+
 const secretKey = process.env.SECRET_KEY
 
 let LoginController = {
-  post: (req, res) => {
-    let { phoneNumber, callingCode, emailAddress, id } = req.body
+  post: async (req, res) => {
+    let { employeeId, password } = req.body
 
-    if (!phoneNumber || !callingCode || !emailAddress || !phoneNumber) {
+    if (!employeeId || !password) {
       res.json({
         message: 'Required Fields are missing',
         status: false,
       })
       return
-    } else {
-      const payload = {
-        phoneNumber: `${callingCode}${phoneNumber}`,
-        id: id,
-        email: emailAddress,
-      }
+    }
 
-      const token = jwt.sign(payload, secretKey)
-
-      let data = req.body
-
-      data.token = token
+    if (password?.length < 8) {
 
       res.json({
-        message: 'User login successfully',
-        status: true,
-        data: data,
+        message: 'Invalid Password',
+        status: false,
       })
+      return
     }
-    // let {callingCode,phoneNumber} = req.body
 
-    // console.log(req.body,"body")
+    try {
+      // Check if the email already exists in the database
+      const findUser = await userModel.findOne({ employee_id: employeeId });
+      console.log(findUser, "existing")
 
-    // userModel.findOne({phone_number : phoneNumber}).then((data)=>{
+      if (!findUser) {
+        return res.json({ success: false, message: 'Employee Id is not valid' });
+      }
+      else {
 
-    //         if(!data){
-    //             res.json({
-    //                 message : "Phone number doesn't exists",
-    //                 status : false
-    //             })
-    //             return
-    //         }
-    //         if(data){
+        let pass = findUser.password
 
-    //             console.log(data,"data")
+        bcrypt.compare(password, pass, async (err, result) => {
+          if (err) {
+            res.json({
+              message: "hash password decrypt unsuccessfull",
+              status: false
 
-    //             if(data.calling_code !== callingCode){
+            }
 
-    //                 res.json({
-    //                     message : "Phone number doesn't exists",
-    //                     status : false
-    //                 })
-    //                 return
-    //             }
+            )
+            return
+          }
+          else {
+            if (result) {
+              // Allow access to the user
 
-    // const payload = {phoneNumber : `${data.calling_code}${data.phone_number}`,id:data._id}
+              let time = Date.now()
 
-    // const token = jwt.sign(payload, secretKey);
+              const payload = {
 
-    // console.log(token,"token")
+                id: findUser._id,
+                employeeId: findUser?.employee_id,
+                emailAddress: findUser?.email_address,
+                fullName: findUser?.full_name,
+                password: findUser?.password,
+                confirmPassword: findUser.confirm_password,
+                time: time
 
-    //         }
+              }
 
-    // }).catch((error)=>{
+              const token = await jwt.sign(payload, secretKey)
 
-    //     res.json({
-    //         message : "Internal Server Error",
-    //         status : false,
-    //         error : error
-    //     })
+              let data = {
+                id: findUser._id,
+                employeeId: findUser?.employee_id,
+                emailAddress: findUser?.email_address,
+                fullName: findUser?.full_name,
+                time: Date.now()
+              }
 
-    // })
-  },
+              data.token = token
+
+              res.json({
+                message: 'User login successfully',
+                status: true,
+                data: data,
+              })
+
+            }
+            else {
+
+              res.json({
+                message: "Incorrect Password",
+                status: false
+              })
+              return
+            }
+          }
+        });
+
+
+      }
+    }
+
+    catch (error) {
+      console.error(error);
+      return res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+  }
 }
 
 module.exports = LoginController
