@@ -20,7 +20,8 @@ app.use(router)
 
 
 let PORT = process.env.PORT || 6000
-const Base_Uri = 'mongodb+srv://deskworksoldevs:wfgUiJqW8QdUsNlT@cluster0.81fracy.mongodb.net/POS'
+const Base_Uri = process.env.MONGO_URL
+
 
 mongoose.connect(Base_Uri).then((success) => {
     console.log("MongoDb connected")
