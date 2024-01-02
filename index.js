@@ -7,7 +7,7 @@ const router = require('./routes/routes')
 require('dotenv').config()
 
 const corsOptions = {
-    origin: 'http://localhost:3000',
+    origin: 'https://pos-system-fbecb.web.app',
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
