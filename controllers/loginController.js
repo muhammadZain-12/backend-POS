@@ -64,7 +64,8 @@ let LoginController = {
                 fullName: findUser?.full_name,
                 password: findUser?.password,
                 confirmPassword: findUser.confirm_password,
-                time: time
+                role: findUser?.role,
+                time: time,
 
               }
 

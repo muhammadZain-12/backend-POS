@@ -28,9 +28,9 @@ const userSchema = mongoose.Schema({
         type: Date,
         default: Date.now, // Set the default value to the current timestamp when a document is created
     },
-    roll : {
-        type : String,
-        role : "employee"
+    role: {
+        type: String,
+        default: "employee"
     }
 
 })
