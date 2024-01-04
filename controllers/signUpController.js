@@ -81,6 +81,8 @@ let SignupController = {
     try {
       // Check if the email already exists in the database
       const existingUser = await userModel.findOne({ employee_id: employeeId });
+     
+     
       console.log(existingUser, "existing")
 
       if (existingUser) {
