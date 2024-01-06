@@ -8,7 +8,7 @@ const path = require("path")
 require('dotenv').config()
 
 const corsOptions = {
-    origin: 'https://pos-system-fbecb.web.app/',
+    origin: 'https://pos-system-fbecb.web.app',
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
