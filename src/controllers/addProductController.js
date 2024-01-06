@@ -32,9 +32,7 @@ const AddProductController = {
         } = req.body
 
 
-        console.log(req.body, "body")
-
-        if (!ProductName || !Supplier_code || !department || !category || !Sub_Category || !make || !model || !barCode) {
+        if (!ProductName || !department || !category || !Sub_Category || !make || !model || !barCode) {
 
 
             res.json({
@@ -42,17 +40,6 @@ const AddProductController = {
                 status: false
             })
             return
-        }
-
-
-        if (colors) {
-
-            if (colors.includes(",")) {
-
-                let data = colors.split(",")
-                colors = data
-
-            }
         }
 
 
@@ -90,7 +77,8 @@ const AddProductController = {
             if (existingProduct) {
                 return res.json({ status: false, message: 'The Product has already been added' });
             }
-        } catch (error) {
+        } 
+        catch (error) {
             console.error(error);
             return res.status(500).json({ status: false, message: 'Internal server error.' });
         }

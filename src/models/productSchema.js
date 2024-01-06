@@ -16,7 +16,7 @@ const productSchema = mongoose.Schema({
     },
     image1_url: {
         type: String,
-        required: true
+        // required: true
     },
     image2_url: {
         type: String,
@@ -91,6 +91,7 @@ const productSchema = mongoose.Schema({
     },
     barcode: {
         type: Number,
+        unique : true,
         required: true
     }
 

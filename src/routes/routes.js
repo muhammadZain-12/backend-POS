@@ -1,15 +1,21 @@
 const express = require("express")
 const jwt = require("jsonwebtoken")
+const multer = require("multer")
 const SignupController = require("../controllers/signUpController")
 const LoginController = require("../controllers/loginController")
 const EmployeeDetailsController = require("../controllers/employeeDetailsController")
 const AddProductController = require("../controllers/addProductController")
+const AddMultipleProductsController = require("../controllers/addMultipleProductsController")
+const UploadProductImageController = require("../controllers/uploadProductImageController")
+const productImages = require("../utils/productImages")
+
 
 require("dotenv").config()
 let router = express.Router()
-
-
 let secret_key = process.env.SECRET_KEY
+
+
+
 
 
 const verifyToken = (token, secret) => {
@@ -31,7 +37,6 @@ const authenticateMiddleware = (req, res, next) => {
     const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
     const secret = secret_key; // Replace with your actual secret key
 
-    console.log(token, "token")
 
     if (!token) {
         return res.status(401).json({ error: 'Unauthorized - Missing token', status: false });
@@ -80,7 +85,11 @@ router.post("/api/signUp", SignupController.post)
 router.post("/api/login", LoginController.post)
 router.get("/api/getEmployeeDetails", authenticateMiddleware, EmployeeDetailsController.get)
 router.post("/api/addProduct", authenticateMiddleware, checkRole, AddProductController.post)
+router.post("/api/addMultipleProducts", authenticateMiddleware, checkRole, AddMultipleProductsController.post)
 router.get("/api/getProducts", authenticateMiddleware, checkRole, AddProductController.get)
+router.post("/api/uploadProductImage", productImages.single('productImages'), UploadProductImageController.post)
+
+
 
 
 
