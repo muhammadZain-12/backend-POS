@@ -20,7 +20,6 @@ app.use(cors())
 app.use(router)
 
 
-
 app.use('/src/products', express.static(path.join(__dirname, 'src/products')));
 
 

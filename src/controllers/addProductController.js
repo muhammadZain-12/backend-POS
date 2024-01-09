@@ -88,7 +88,6 @@ const AddProductController = {
             minimum_stock: minimumStock,
             barcode: barCode,
             status: status
-
         }
 
         try {
