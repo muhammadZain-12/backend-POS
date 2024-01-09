@@ -19,7 +19,7 @@ const AddMultipleProductsController = {
         }
 
         let checkFields = data && data.length > 0 && data.some((e, i) => {
-            !e?.ProductName || !e?.Supplier_code || !e?.department || !e?.category || !e?.Sub_Category || !e?.make || !e?.model || !e?.barCode
+            !e?.ProductName || !e?.Supplier_code || !e?.department || !e?.category || !e?.Sub_Category || !e?.make || !e?.model || !e?.barCode || !e?.cost_price || !e?.trade_price || !e?.retail_price || !e?.warehouse_price || !e?.warehouse_price_w_vat || !e?.cost_price_w_vat || !e?.trade_price_w_vat || !e?.retail_price_w_vat
         })
 
         if (checkFields) {
@@ -62,6 +62,16 @@ const AddMultipleProductsController = {
                     trade_price: e.trade_price,
                     warehouse_price: e.warehouse_price,
                     retail_price: e.retail_price,
+                    cost_price_w_vat: e.cost_price_w_vat,
+                    trade_price_w_vat: e.trade_price_w_vat,
+                    warehouse_price_w_vat: e.warehouse_price_w_vat,
+                    retail_price_w_vat: e.retail_price_w_vat,
+                    transportation_price: e.transportation_price,
+                    transportation_price_w_vat: e.transportation_price_w_vat,
+                    other_expense: e.other_expense,
+                    other_expense_w_vat: e.other_expense_w_vat,
+                    minimum_sale: e.minimumSale,
+                    minimum_stock: e.minimumStock,
                     barcode: e.barCode,
                     status: e.status
 
@@ -88,9 +98,18 @@ const AddMultipleProductsController = {
                     trade_price: e.trade_price,
                     warehouse_price: e.warehouse_price,
                     retail_price: e.retail_price,
+                    cost_price_w_vat: e?.cost_price_w_vat,
+                    trade_price_w_vat: e?.trade_price_w_vat,
+                    warehouse_price_w_vat: e?.warehouse_price_w_vat,
+                    retail_price_w_vat: e?.retail_price_w_vat,
+                    transportation_price: e?.transportation_price,
+                    transportation_price_w_vat: e?.transportation_price_w_vat,
+                    other_expense: e?.other_expense,
+                    other_expense_w_vat: e?.other_expense_w_vat,
+                    minimum_sale: e?.minimumSale,
+                    minimum_stock: e?.minimumStock,
                     barcode: e.barCode,
                     status: e.status
-
                 }
             }
         })

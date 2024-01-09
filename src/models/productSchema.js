@@ -62,23 +62,74 @@ const productSchema = mongoose.Schema({
     cost_price: {
         type: Number,
         required: true,
-        default: 1
+
     },
     trade_price: {
         type: Number,
         required: true,
-        default: 1
+
     },
     warehouse_price: {
         type: Number,
         required: true,
-        default: 1
+
     },
     retail_price: {
         type: Number,
         required: true,
-        default: 1
+
     },
+    cost_price_w_vat: {
+        type: Number,
+        required: true,
+
+    },
+    trade_price_w_vat: {
+        type: Number,
+        required: true,
+
+    },
+    warehouse_price_w_vat: {
+        type: Number,
+        required: true,
+
+    },
+    retail_price_w_vat: {
+        type: Number,
+        required: true,
+
+    },
+    retail_price_w_vat: {
+        type: Number,
+        required: true,
+
+    },
+    transportation_price: {
+        type: Number,
+    },
+
+    transportation_price_w_vat: {
+        type: Number,
+    },
+
+    other_expense: {
+        type: Number,
+    },
+    other_expense_w_vat: {
+        type: Number,
+    },
+    minimum_sale: {
+        type: Number,
+    },
+
+    minimum_stock: {
+        type: Number,
+    },
+
+    IMEI: {
+        type: Number,
+    },
+
     status: {
         type: String,
         required: true,
@@ -91,7 +142,7 @@ const productSchema = mongoose.Schema({
     },
     barcode: {
         type: Number,
-        unique : true,
+        unique: true,
         required: true
     }
 

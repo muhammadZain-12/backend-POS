@@ -27,12 +27,23 @@ const AddProductController = {
             warehouse_price,
             trade_price,
             retail_price,
+            cost_price_w_vat,
+            trade_price_w_vat,
+            warehouse_price_w_vat,
+            retail_price_w_vat,
+            transportation_price,
+            transportation_price_w_vat,
+            other_expense,
+            other_expense_w_vat,
+            minimumSale,
+            minimumStock,
+            IMEI,
             barCode,
             status
         } = req.body
 
 
-        if (!ProductName || !department || !category || !Sub_Category || !make || !model || !barCode) {
+        if (!ProductName || !department || !category || !Sub_Category || !make || !model || !barCode || !cost_price || !trade_price || !retail_price || !warehouse_price || !warehouse_price_w_vat || !cost_price_w_vat || !trade_price_w_vat || !retail_price_w_vat) {
 
 
             res.json({
@@ -41,6 +52,7 @@ const AddProductController = {
             })
             return
         }
+
 
 
         let dataToSend = {
@@ -64,11 +76,20 @@ const AddProductController = {
             trade_price: trade_price,
             warehouse_price: warehouse_price,
             retail_price: retail_price,
+            cost_price_w_vat: cost_price_w_vat,
+            trade_price_w_vat: trade_price_w_vat,
+            warehouse_price_w_vat: warehouse_price_w_vat,
+            retail_price_w_vat: retail_price_w_vat,
+            transportation_price: transportation_price,
+            transportation_price_w_vat: transportation_price_w_vat,
+            other_expense: other_expense,
+            other_expense_w_vat: other_expense_w_vat,
+            minimum_sale: minimumSale,
+            minimum_stock: minimumStock,
             barcode: barCode,
             status: status
 
         }
-
 
         try {
             // Check if the email already exists in the database
@@ -77,7 +98,7 @@ const AddProductController = {
             if (existingProduct) {
                 return res.json({ status: false, message: 'The Product has already been added' });
             }
-        } 
+        }
         catch (error) {
             console.error(error);
             return res.status(500).json({ status: false, message: 'Internal server error.' });
