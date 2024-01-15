@@ -1,0 +1,194 @@
+const CustomerModel = require("../models/customerSchema")
+
+
+function convertToObject(data) {
+
+
+    let date = data.created_at
+
+    const day = date.getDate(); // 15
+    const month = date.getMonth() + 1; // Months are zero-based, so January is 0
+    const year = date.getFullYear(); // 2024
+
+
+    date = `${day}/${month}/${year}`
+
+    return {
+        customerName: data.customer_name,
+        id: data._id,
+        created_at: date,
+        address: data.address,
+        city: data.city,
+        email: data.email,
+        postalCode: data.postal_code,
+        legalStatus: data.legal_status,
+        telephoneNo: data.telephone_no,
+        telephoneNo2: data.telephone_no2,
+        comment: data.comment,
+        mobileNumber: data.mobile_number,
+        fax: data.fax,
+        accountManager: data.account_manager,
+        orderLocation: data.order_location,
+        creditLimits: data.credit_limits,
+        creditDays: data.credit_days,
+        discount: data.discount,
+        priceLevel: data.price_level,
+    };
+}
+
+
+
+const CustomerController = {
+    post: (req, res) => {
+
+        let data = req.body
+
+
+        let dataToSend = {
+
+            customer_name: data.customerName,
+            created_at: data.created_at,
+            address: data.address,
+            city: data.city,
+            email: data.email,
+            postal_code: data.postalCode,
+            legal_status: data.legalStatus,
+            telephone_no: data.telephoneNo,
+            telephone_no2: data.telephoneNo2,
+            mobile_number: data.mobileNumber,
+            fax: data.fax,
+            account_manager: data.accountManager,
+            order_location: data.orderLocation,
+            credit_limits: data.creditLimits,
+            credit_days: data.creditDays,
+            discount: data.discount,
+            price_level: data.priceLevel,
+        }
+
+        CustomerModel.create(dataToSend).then((data) => {
+
+            console.log(data, "dataa")
+
+            if (!data) {
+                res.json({
+                    message: 'Internal Server Error',
+                    status: false,
+                })
+                return
+            }
+
+            if (data) {
+
+                let convertedArray = [data].map(convertToObject);
+
+                console.log(convertedArray, "array")
+
+                res.json({
+                    message: 'Customer created successfully',
+                    status: true,
+                    data: convertedArray[0],
+                })
+                return
+            }
+
+        }).catch((error) => {
+
+            res.json({
+                message: 'Internal Server Error',
+                status: false,
+                error: error,
+            })
+        })
+    },
+
+    get: (req, res) => {
+
+        CustomerModel.find({}).then((data) => {
+
+            if (!data) {
+                res.json({
+                    message: "Internal Server Error",
+                    status: false
+                })
+                return
+            }
+
+            if (data && data.length == 0) {
+
+                res.json({
+                    message: "No Customer Found",
+                    status: false
+                })
+                return
+            }
+
+            if (data && data.length > 0) {
+
+                let convertedArray = data.map(convertToObject);
+
+                res.json({
+
+                    message: "Customers Successfully Get",
+                    status: true,
+                    data: convertedArray
+
+                })
+                return
+            }
+
+        }).catch((error) => {
+
+            res.json({
+                message: "Internal Server Error",
+                error: error,
+                status: false
+            })
+
+        })
+
+    },
+
+    put: (req, res) => {
+
+        let data = req.body
+
+
+        let dataToSend = {
+
+            customer_name: data.customerName,
+            created_at: data.created_at,
+            address: data.address,
+            city: data.city,
+            _id: data.id,
+            email: data.email,
+            postal_code: data.postalCode,
+            legal_status: data.legalStatus,
+            telephone_no: data.telephoneNo,
+            telephone_no2: data.telephoneNo2,
+            comment: data.comment,
+            mobile_number: data.mobileNumber,
+            fax: data.fax,
+            account_manager: data.accountManager,
+            order_location: data.orderLocation,
+            credit_limits: data.creditLimits,
+            credit_days: data.creditDays,
+            discount: data.discount,
+            price_level: data.priceLevel,
+        }
+
+        CustomerModel.findByIdAndUpdate(dataToSend._id, dataToSend, { new: true }).then(updatedDocument => {
+
+            console.log(updatedDocument, "updated")
+
+        }).catch((error) => {
+
+            console.log(error, "error")
+
+        })
+
+
+
+    }
+}
+
+module.exports = CustomerController

@@ -8,6 +8,7 @@ const AddProductController = require("../controllers/addProductController")
 const AddMultipleProductsController = require("../controllers/addMultipleProductsController")
 const UploadProductImageController = require("../controllers/uploadProductImageController")
 const productImages = require("../utils/productImages")
+const CustomerController = require("../controllers/customerController")
 
 
 require("dotenv").config()
@@ -87,7 +88,11 @@ router.get("/api/getEmployeeDetails", authenticateMiddleware, EmployeeDetailsCon
 router.post("/api/addProduct", authenticateMiddleware, checkRole, AddProductController.post)
 router.post("/api/addMultipleProducts", authenticateMiddleware, checkRole, AddMultipleProductsController.post)
 router.get("/api/getProducts", authenticateMiddleware, checkRole, AddProductController.get)
-router.post("/api/uploadProductImage", productImages.single('productImages'), UploadProductImageController.post)
+router.post("/api/uploadProductImage", authenticateMiddleware, checkRole, productImages.single('productImages'), UploadProductImageController.post)
+router.post("/api/createCustomer", authenticateMiddleware, checkRole, CustomerController.post)
+router.get("/api/getCustomers", CustomerController.get)
+router.put("/api/updateCustomer", CustomerController.put)
+
 
 
 

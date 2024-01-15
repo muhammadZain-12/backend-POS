@@ -139,7 +139,6 @@ const AddProductController = {
 
             let data = await productModel.find({})
 
-            console.log(data, "dataa")
             res.json({
                 message: "Products Successfully Get",
                 status: true,
