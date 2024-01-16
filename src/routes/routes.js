@@ -9,7 +9,7 @@ const AddMultipleProductsController = require("../controllers/addMultipleProduct
 const UploadProductImageController = require("../controllers/uploadProductImageController")
 const productImages = require("../utils/productImages")
 const CustomerController = require("../controllers/customerController")
-
+const EmailController  = require("../controllers/emailController")
 
 require("dotenv").config()
 let router = express.Router()
@@ -81,7 +81,6 @@ const checkRole = (req, res, next) => {
 }
 
 
-
 router.post("/api/signUp", SignupController.post)
 router.post("/api/login", LoginController.post)
 router.get("/api/getEmployeeDetails", authenticateMiddleware, EmployeeDetailsController.get)
@@ -90,8 +89,10 @@ router.post("/api/addMultipleProducts", authenticateMiddleware, checkRole, AddMu
 router.get("/api/getProducts", authenticateMiddleware, checkRole, AddProductController.get)
 router.post("/api/uploadProductImage", authenticateMiddleware, checkRole, productImages.single('productImages'), UploadProductImageController.post)
 router.post("/api/createCustomer", authenticateMiddleware, checkRole, CustomerController.post)
-router.get("/api/getCustomers", CustomerController.get)
-router.put("/api/updateCustomer", CustomerController.put)
+router.get("/api/getCustomers", authenticateMiddleware, checkRole, CustomerController.get)
+router.put("/api/updateCustomer", authenticateMiddleware, checkRole, CustomerController.put)
+router.delete("/api/deleteCustomer/:id", authenticateMiddleware, checkRole, CustomerController.delete)
+router.post("/api/sendEmailToCustomer", authenticateMiddleware, checkRole, EmailController.post)
 
 
 

@@ -33,6 +33,9 @@ function convertToObject(data) {
         creditDays: data.credit_days,
         discount: data.discount,
         priceLevel: data.price_level,
+        deliveryAddress: data.delivery_address,
+        deliveryCity: data.delivery_city,
+        deliveryPostalCode: data?.delivery_postal_code
     };
 }
 
@@ -81,7 +84,6 @@ const CustomerController = {
 
                 let convertedArray = [data].map(convertToObject);
 
-                console.log(convertedArray, "array")
 
                 res.json({
                     message: 'Customer created successfully',
@@ -173,22 +175,97 @@ const CustomerController = {
             credit_limits: data.creditLimits,
             credit_days: data.creditDays,
             discount: data.discount,
+            delivery_address: data.deliveryAddress,
+            delivery_city: data.deliveryCity,
+            delivery_postal_code: data.deliveryPostalCode,
             price_level: data.priceLevel,
         }
 
         CustomerModel.findByIdAndUpdate(dataToSend._id, dataToSend, { new: true }).then(updatedDocument => {
 
-            console.log(updatedDocument, "updated")
+
+
+
+
+
+            if (!updatedDocument) {
+                res.json({
+                    message: "Internal Server Error",
+                    status: false
+                })
+                return
+            }
+
+
+            let convertedArray = [updatedDocument].map(convertToObject);
+
+            res.json({
+                message: "Customer Account has been successfully updated",
+                status: true,
+                data: convertedArray[0]
+            })
+
 
         }).catch((error) => {
 
-            console.log(error, "error")
+            res.json({
+                message: error.message,
+                status: false,
+                error: error
+            })
 
         })
 
 
 
+    },
+
+    delete: (req, res) => {
+
+
+        const customerId = req.params.id;
+
+
+        CustomerModel.findByIdAndDelete(customerId).then((data) => {
+
+
+            if (!data) {
+
+                res.json({
+                    message: "Internal Server Error",
+                    status: false
+                })
+                return
+
+            }
+
+            let convertedArray = [data].map(convertToObject);
+
+
+            res.json({
+                message: "Customer has been successfully deleted",
+                status: true,
+                data: convertedArray[0]
+            })
+
+        }).catch((error) => {
+
+            res.json({
+                message: error.message,
+                status: false,
+                error: error
+            })
+
+        })
+
+
+
+
+
+
     }
+
+
 }
 
 module.exports = CustomerController

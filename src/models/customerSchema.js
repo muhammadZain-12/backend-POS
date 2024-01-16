@@ -58,7 +58,7 @@ const CustomerSchema = mongoose.Schema({
         type: String,
         // Set the default value to the current timestamp when a document is created
     },
-    credit_limit: {
+    credit_limits: {
         type: Number
     },
 
@@ -73,7 +73,17 @@ const CustomerSchema = mongoose.Schema({
     },
     order_location: {
         type: [mongoose.Schema.Types.Mixed]
-    }
+    },
+    delivery_address: {
+        type: String
+    },
+    delivery_city: {
+        type: String
+    },
+    delivery_postal_code: {
+        type: String
+    },
+
 })
 
 const CustomerModel = mongoose.model("customers", CustomerSchema)
