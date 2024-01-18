@@ -8,7 +8,7 @@ const emailSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    _id: {
+    id: {
         type: String,
         required: true
     },
@@ -24,9 +24,9 @@ const emailSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    info : {
+    info: {
 
-        type : [mongoose.Schema.Types.Mixed]
+        type: [mongoose.Schema.Types.Mixed]
 
     },
     created_at: {

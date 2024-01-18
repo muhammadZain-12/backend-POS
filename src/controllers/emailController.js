@@ -72,7 +72,7 @@ const EmailController = {
 
                 let dataToSend = {
 
-                    _id: id,
+                    id: id,
                     name: name,
                     subject: subject,
                     body: body,

@@ -144,7 +144,7 @@ const productSchema = mongoose.Schema({
         type: Number,
         unique: true,
         required: true
-    }
+    }   
 
 })
 

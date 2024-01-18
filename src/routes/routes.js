@@ -9,13 +9,11 @@ const AddMultipleProductsController = require("../controllers/addMultipleProduct
 const UploadProductImageController = require("../controllers/uploadProductImageController")
 const productImages = require("../utils/productImages")
 const CustomerController = require("../controllers/customerController")
-const EmailController  = require("../controllers/emailController")
+const EmailController = require("../controllers/emailController")
 
 require("dotenv").config()
 let router = express.Router()
 let secret_key = process.env.SECRET_KEY
-
-
 
 
 
@@ -93,12 +91,6 @@ router.get("/api/getCustomers", authenticateMiddleware, checkRole, CustomerContr
 router.put("/api/updateCustomer", authenticateMiddleware, checkRole, CustomerController.put)
 router.delete("/api/deleteCustomer/:id", authenticateMiddleware, checkRole, CustomerController.delete)
 router.post("/api/sendEmailToCustomer", authenticateMiddleware, checkRole, EmailController.post)
-
-
-
-
-
-
 
 
 
