@@ -61,7 +61,7 @@ const checkRole = (req, res, next) => {
 
     let data = req.user
 
-    if (data.role == "employee") {
+    if (data.role == "employee" || data.role == "admin") {
 
         next()
 
