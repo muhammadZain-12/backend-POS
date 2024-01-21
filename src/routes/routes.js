@@ -11,6 +11,7 @@ const productImages = require("../utils/productImages")
 const CustomerController = require("../controllers/customerController")
 const EmailController = require("../controllers/emailController")
 const InvoiceController = require("../controllers/invoiceController")
+const vatController = require("../controllers/vatController")
 
 require("dotenv").config()
 let router = express.Router()
@@ -94,6 +95,8 @@ router.delete("/api/deleteCustomer/:id", authenticateMiddleware, checkRole, Cust
 router.post("/api/sendEmailToCustomer", authenticateMiddleware, checkRole, EmailController.post)
 router.post("/api/createInvoice", authenticateMiddleware,InvoiceController.post)
 router.get("/api/getInvoices/:id", authenticateMiddleware,InvoiceController.get)
+router.get("/api/getVat", authenticateMiddleware,vatController.get)
+router.put("/api/changeVat",authenticateMiddleware ,vatController.put)
 
 
 

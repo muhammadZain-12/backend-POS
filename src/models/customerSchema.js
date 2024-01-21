@@ -9,6 +9,9 @@ const CustomerSchema = mongoose.Schema({
         type: String,
         // required: true
     },
+    credit_balance : {
+        type : Number,
+    },
     comment: {
         type: String,
         // required: true

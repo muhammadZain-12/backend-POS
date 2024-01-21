@@ -34,6 +34,7 @@ function convertToObject(data) {
         discount: data.discount,
         priceLevel: data.price_level,
         deliveryAddress: data.delivery_address,
+        creditBalance : data?.credit_balance,
         deliveryCity: data.delivery_city,
         deliveryPostalCode: data?.delivery_postal_code
     };

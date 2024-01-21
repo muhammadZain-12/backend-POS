@@ -34,6 +34,9 @@ const InvoiceSchema = mongoose.Schema({
         type: Number,
         required: true
     },
+    vatAmount : {
+        type : Number,  
+    },
     totalItems: {
         type: Number,
         required: true
@@ -57,7 +60,22 @@ const InvoiceSchema = mongoose.Schema({
     paymentMethod: {
         type: String,
         required: true
-    }
+    },
+    referenceId : {
+        type : String
+    },
+    cheque_no : {
+        type : String
+    },
+    bank_name : {
+        type : String
+    },
+    clear_date : {
+        type : Date
+    },
+
+
+
 
 })
 

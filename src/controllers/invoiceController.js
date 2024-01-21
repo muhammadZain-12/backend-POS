@@ -1,3 +1,4 @@
+const CustomerModel = require("../models/customerSchema")
 const InvoiceModel = require("../models/invoiceSchema")
 const ProductModel = require("../models/productSchema")
 const moment = require("moment")
@@ -54,6 +55,36 @@ const InvoiceController = {
 
                 invoice.id = invoice._id
 
+                if (invoice.paymentMethod.toLowerCase() == "cheque" || invoice.paymentMethod.toLowerCase() == "credit") {
+
+
+                    console.log(invoice, "invoice")
+
+                    CustomerModel.findByIdAndUpdate(invoice.customerDetails[0]?.id, {
+                        $inc: { credit_balance: (invoice.subtotal) }
+                    }).then((data) => {
+
+                        invoice.customerDetails = [data]
+                        res.json({
+                            message: "Transaction Successful",
+                            status: true,
+                            data: invoice
+                        })
+
+                    }).catch((error) => {
+
+                        res.json({
+                            message: error.message,
+                            status: false,
+                            error: error
+                        })
+                    })
+
+                    return
+                }
+
+
+
                 res.json({
                     message: "Transaction successful",
                     status: true,
@@ -94,7 +125,7 @@ const InvoiceController = {
         try {
             let employeeId = req.params.id; // Assuming the employee ID is passed as a parameter
 
-            console.log(employeeId, "empliyee")
+            // console.log(employeeId, "empliyee")
 
             const todayStart = moment().startOf('day');
             const todayEnd = moment().endOf('day');
@@ -104,7 +135,7 @@ const InvoiceController = {
                 saleDate: { $gte: todayStart.toDate(), $lt: todayEnd.toDate() }
             });
 
-            console.log(invoices, "invoices")
+            // console.log(invoices, "invoices")
 
             if (!invoices || invoices.length === 0) {
                 res.json({
