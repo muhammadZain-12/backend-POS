@@ -64,7 +64,6 @@ const InvoiceController = {
                         $inc: { credit_balance: (invoice.subtotal) }
                     }).then((data) => {
 
-                        invoice.customerDetails = [data]
                         res.json({
                             message: "Transaction Successful",
                             status: true,
