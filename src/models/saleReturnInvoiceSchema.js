@@ -2,7 +2,7 @@ const mongoose = require("mongoose")
 
 
 
-const InvoiceSchema = mongoose.Schema({
+const SaleReturnInvoiceSchema = mongoose.Schema({
 
     customerDetails: {
         type: [mongoose.Schema.Types.Mixed],
@@ -34,6 +34,9 @@ const InvoiceSchema = mongoose.Schema({
         type: Number,
         required: true
     },
+    costPrice: {
+        type: Number,
+    },
     vatAmount: {
         type: Number,
     },
@@ -41,11 +44,15 @@ const InvoiceSchema = mongoose.Schema({
         type: Number,
         required: true
     },
+    totalQty : {
+        type : Number,
+        required : true
+    },
     customerName: {
         type: String,
         required: true,
     },
-    saleDate: {
+    saleReturnDate: {
         type: Date,
         default: Date.now
     },
@@ -56,6 +63,13 @@ const InvoiceSchema = mongoose.Schema({
     invoiceNumber: {
         type: String,
         required: true
+    },
+    returnInvoiceRef: {
+        type: Number,
+        required: true
+    },
+    invoiceRefDate: {
+        type: Date,
     },
     paymentMethod: {
         type: String,
@@ -78,13 +92,11 @@ const InvoiceSchema = mongoose.Schema({
     },
 
 
-
-
 })
 
-const InvoiceModel = mongoose.model("invoices", InvoiceSchema)
+const SaleReturnInvoiceModel = mongoose.model("SaleReturninvoices", SaleReturnInvoiceSchema)
 
-module.exports = InvoiceModel
+module.exports = SaleReturnInvoiceModel
 
 
 

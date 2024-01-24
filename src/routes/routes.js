@@ -12,6 +12,9 @@ const CustomerController = require("../controllers/customerController")
 const EmailController = require("../controllers/emailController")
 const InvoiceController = require("../controllers/invoiceController")
 const vatController = require("../controllers/vatController")
+const DemandedProductController = require("../controllers/DemandedProductController")
+const SaleReturnController = require("../controllers/saleReturnController")
+
 
 require("dotenv").config()
 let router = express.Router()
@@ -93,10 +96,15 @@ router.get("/api/getCustomers", authenticateMiddleware, CustomerController.get)
 router.put("/api/updateCustomer", authenticateMiddleware, checkRole, CustomerController.put)
 router.delete("/api/deleteCustomer/:id", authenticateMiddleware, checkRole, CustomerController.delete)
 router.post("/api/sendEmailToCustomer", authenticateMiddleware, checkRole, EmailController.post)
-router.post("/api/createInvoice", authenticateMiddleware,InvoiceController.post)
-router.get("/api/getInvoices/:id", authenticateMiddleware,InvoiceController.get)
-router.get("/api/getVat", authenticateMiddleware,vatController.get)
-router.put("/api/changeVat",authenticateMiddleware ,vatController.put)
+router.post("/api/createInvoice", authenticateMiddleware, InvoiceController.post)
+router.get("/api/getInvoices/:id", authenticateMiddleware, InvoiceController.get)
+router.get("/api/getDayAllInvoices", authenticateMiddleware, InvoiceController.getDayAll)
+router.get("/api/getAllInvoices", authenticateMiddleware, InvoiceController.getAll)
+router.get("/api/getVat", authenticateMiddleware, vatController.get)
+router.put("/api/changeVat", authenticateMiddleware, vatController.put)
+router.post("/api/AddDemandedProduct", authenticateMiddleware, DemandedProductController.post)
+router.post("/api/SaleReturnDamage", authenticateMiddleware, SaleReturnController.post)
+
 
 
 

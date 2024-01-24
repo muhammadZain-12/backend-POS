@@ -90,8 +90,6 @@ const InvoiceController = {
                     data: invoice
                 })
 
-
-
             }).catch((error) => {
 
                 res.json({
@@ -101,9 +99,6 @@ const InvoiceController = {
                 })
 
             })
-
-
-
 
         }).catch(error => {
             res.json({
@@ -159,6 +154,81 @@ const InvoiceController = {
                 error: error.message
             });
         }
+
+    },
+    getDayAll: async (req, res) => {
+
+
+        try {
+
+            const todayStart = moment().startOf('day');
+            const todayEnd = moment().endOf('day');
+
+            const invoices = await InvoiceModel.find({
+                saleDate: { $gte: todayStart.toDate(), $lt: todayEnd.toDate() }
+            });
+
+            console.log(invoices, "invoices")
+
+            if (!invoices || invoices.length === 0) {
+                res.json({
+                    message: "No invoices found for the specified employee and date",
+                    status: true,
+                    data: []
+                });
+                return;
+            }
+
+
+            res.json({
+                message: "Invoices successfully retrieved",
+                status: true,
+                data: invoices
+            });
+        } catch (error) {
+            console.log(error, "error")
+            res.json({
+                message: "Internal Server Error",
+                status: false,
+                error: error.message
+            });
+        }
+
+    },
+
+    getAll: async (req, res) => {
+
+
+        try {
+
+
+            const invoices = await InvoiceModel.find({});
+
+
+            if (!invoices || invoices.length === 0) {
+                res.json({
+                    message: "No invoices found for the specified employee and date",
+                    status: true,
+                    data: []
+                });
+                return;
+            }
+
+            res.json({
+                message: "Invoices successfully retrieved",
+                status: true,
+                data: invoices
+            });
+        } catch (error) {
+            console.log(error, "error")
+            res.json({
+                message: "Internal Server Error",
+                status: false,
+                error: error.message
+            });
+        }
+
+
 
     }
 
