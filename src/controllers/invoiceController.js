@@ -14,9 +14,9 @@ const InvoiceController = {
 
         invoiceData.invoiceNumber = totalInvoice + 1
 
-        let { customerDetails, productDetails, total, discount, subtotal, employeeDetails, saleDate, status, paymentMethod, customerName, totalItems } = req.body
+        let { customerDetails, productDetails, total, discount, subtotal, employeeDetails, status, paymentMethod, customerName, totalItems } = req.body
 
-        if (!customerDetails || !productDetails || !total || !subtotal || !employeeDetails || !saleDate || !status || !paymentMethod || !totalItems || !customerName) {
+        if (!customerDetails || !productDetails || !total || !subtotal || !employeeDetails ||  !status || !paymentMethod || !totalItems || !customerName) {
 
             res.json({
                 message: " Required fields are missing",

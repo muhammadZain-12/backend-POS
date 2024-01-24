@@ -1,5 +1,8 @@
 const SaleReturnInvoiceModel = require("../models/saleReturnInvoiceSchema")
 const DamageProductModel = require("../models/damageProductsSchema")
+const ProductModel = require("../models/productSchema")
+const trashProductModel = require("../models/TrashProductSchema")
+const moment = require("moment")
 
 const SaleReturnController = {
 
@@ -25,27 +28,71 @@ const SaleReturnController = {
 
         productDetails = productDetails.map((product) => {
 
-            return {
-                ...product,
-                DamageQty: product.DamageQty ? product.DamageQty : product.saleQty,
-                status: "Damage"
+            if (status == "Damage") {
+                return {
+                    ...product,
+                    DamageQty: product.DamageQty ? product.DamageQty : product.saleQty,
+                    status: status
+                }
+            }
+            else if (status == "Trash") {
+                return {
+                    ...product,
+                    qty: product.DamageQty ? product.DamageQty : product.saleQty,
+                    status: status
+                }
+            } else {
+
+                return {
+                    ...product,
+                    qty: product.DamageQty ? product.DamageQty : product.saleQty,
+                }
             }
 
         })
 
-        console.log(productDetails, "productDetails")
-
         const updatePromises = productDetails.map(async (product) => {
-            const existingProduct = await DamageProductModel.findOne({ _id: product._id });
 
-            if (existingProduct) {
-                // If the product exists, update the damageQty
-                existingProduct.DamageQty += product.DamageQty;
-                await existingProduct.save();
-            } else {
-                // If the product doesn't exist, create a new entry
-                await DamageProductModel.create(product);
+            if (status == "Return") {
+
+                const existingProduct = await ProductModel.findOne({ _id: product._id });
+
+                if (existingProduct) {
+                    // If the product exists, update the damageQty
+                    existingProduct.qty += product.qty;
+                    await existingProduct.save();
+                } else {
+                    // If the product doesn't exist, create a new entry
+                    await ProductModel.create(product);
+                }
             }
+            else if (status == "Damage") {
+
+                const existingProduct = await DamageProductModel.findOne({ _id: product._id });
+
+                if (existingProduct) {
+                    // If the product exists, update the damageQty
+                    existingProduct.DamageQty += product.DamageQty;
+                    await existingProduct.save();
+                } else {
+                    // If the product doesn't exist, create a new entry
+                    await DamageProductModel.create(product);
+                }
+            }
+            else if (status == "Trash") {
+
+                const existingProduct = await trashProductModel.findOne({ _id: product._id });
+
+                if (existingProduct) {
+                    // If the product exists, update the damageQty
+                    existingProduct.qty += product.qty;
+                    await existingProduct.save();
+                } else {
+                    // If the product doesn't exist, create a new entry
+                    await trashProductModel.create(product);
+                }
+            }
+
         });
 
         await Promise.all(updatePromises);
@@ -53,7 +100,6 @@ const SaleReturnController = {
 
         SaleReturnInvoiceModel.create(invoiceData).then((data) => {
 
-            console.log(data, "dataaaa")
 
             if (!data) {
 
@@ -83,7 +129,86 @@ const SaleReturnController = {
 
 
 
-    }
+    },
+    getEmployeeDayInvoices: async (req, res) => {
+
+
+
+        try {
+            let employeeId = req.params.id; // Assuming the employee ID is passed as a parameter
+
+            // console.log(employeeId, "empliyee")
+
+            const todayStart = moment().startOf('day');
+            const todayEnd = moment().endOf('day');
+
+            const invoices = await SaleReturnInvoiceModel.find({
+                employeeId: employeeId,
+                saleReturnDate: { $gte: todayStart.toDate(), $lt: todayEnd.toDate() }
+            });
+
+            // console.log(invoices, "invoices")
+
+            if (!invoices || invoices.length === 0) {
+                res.json({
+                    message: "No invoices found for the specified employee and date",
+                    status: true,
+                    data: []
+                });
+                return;
+            }
+
+            res.json({
+                message: "Invoices successfully retrieved",
+                status: true,
+                data: invoices
+            });
+        } catch (error) {
+            console.log(error, "error")
+            res.json({
+                message: "Internal Server Error",
+                status: false,
+                error: error.message
+            });
+        }
+    },
+    getDayAllInvoices: async (req, res) => {
+
+
+        try {
+
+            const todayStart = moment().startOf('day');
+            const todayEnd = moment().endOf('day');
+
+            const invoices = await SaleReturnInvoiceModel.find({
+                saleReturnDate: { $gte: todayStart.toDate(), $lt: todayEnd.toDate() }
+            });
+
+            if (!invoices || invoices.length === 0) {
+                res.json({
+                    message: "No invoices found for the specified employee and date",
+                    status: true,
+                    data: []
+                });
+                return;
+            }
+
+
+            res.json({
+                message: "Invoices successfully retrieved",
+                status: true,
+                data: invoices
+            });
+        } catch (error) {
+            console.log(error, "error")
+            res.json({
+                message: "Internal Server Error",
+                status: false,
+                error: error.message
+            });
+        }
+
+    },
 
 }
 

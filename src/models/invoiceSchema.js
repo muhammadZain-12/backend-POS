@@ -33,6 +33,10 @@ const InvoiceSchema = mongoose.Schema({
     subtotal: {
         type: Number,
         required: true
+
+    },
+    costPrice: {
+        type: Number
     },
     vatAmount: {
         type: Number,

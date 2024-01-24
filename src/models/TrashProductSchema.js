@@ -2,7 +2,7 @@ const mongoose = require("mongoose")
 
 
 
-const productSchema = mongoose.Schema({
+const damageProductSchema = mongoose.Schema({
 
     product_name: {
         type: String,
@@ -45,7 +45,6 @@ const productSchema = mongoose.Schema({
     make: {
         type: String,
         required: true,
-        default: 1
     },
     model: {
         type: String,
@@ -54,30 +53,22 @@ const productSchema = mongoose.Schema({
     qty: {
         type: Number,
         required: true,
-        default: 1
-    },
-    reminder_qty: {
-        type: Number,
     },
     cost_price: {
         type: Number,
         required: true,
-
     },
     trade_price: {
         type: Number,
         required: true,
-
     },
     warehouse_price: {
         type: Number,
         required: true,
-
     },
     retail_price: {
         type: Number,
         required: true,
-
     },
     cost_price_w_vat: {
         type: Number,
@@ -92,6 +83,7 @@ const productSchema = mongoose.Schema({
     },
     retail_price_w_vat: {
         type: Number,
+
     },
     retail_price_w_vat: {
         type: Number,
@@ -114,19 +106,16 @@ const productSchema = mongoose.Schema({
     minimum_sale: {
         type: Number,
     },
-
     minimum_stock: {
         type: Number,
     },
-
     IMEI: {
         type: Number,
     },
-
     status: {
         type: String,
         required: true,
-        default: "Active"
+        default: "Trash"
 
     },
     created_at: {
@@ -141,9 +130,9 @@ const productSchema = mongoose.Schema({
 
 })
 
-const productModel = mongoose.model("products", productSchema)
+const trashProductModel = mongoose.model("Trashproducts", damageProductSchema)
 
-module.exports = productModel
+module.exports = trashProductModel
 
 
 

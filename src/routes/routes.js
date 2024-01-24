@@ -104,6 +104,8 @@ router.get("/api/getVat", authenticateMiddleware, vatController.get)
 router.put("/api/changeVat", authenticateMiddleware, vatController.put)
 router.post("/api/AddDemandedProduct", authenticateMiddleware, DemandedProductController.post)
 router.post("/api/SaleReturnDamage", authenticateMiddleware, SaleReturnController.post)
+router.get("/api/getReturnInvoices/:id", authenticateMiddleware, SaleReturnController.getEmployeeDayInvoices)
+router.get("/api/getDayAllReturnInvoices", authenticateMiddleware, SaleReturnController.getDayAllInvoices)
 
 
 
