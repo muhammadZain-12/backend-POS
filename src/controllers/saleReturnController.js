@@ -2,6 +2,7 @@ const SaleReturnInvoiceModel = require("../models/saleReturnInvoiceSchema")
 const DamageProductModel = require("../models/damageProductsSchema")
 const ProductModel = require("../models/productSchema")
 const trashProductModel = require("../models/TrashProductSchema")
+const CustomerModel = require("../models/customerSchema")
 const moment = require("moment")
 
 const SaleReturnController = {
@@ -15,7 +16,7 @@ const SaleReturnController = {
 
         invoiceData.invoiceNumber = totalInvoice + 1
 
-        let { customerDetails, productDetails, total, discount, subtotal, employeeDetails, saleReturnDate, status, paymentMethod, customerName, totalItems, totalQty, returnInvoiceRef } = req.body
+        let { customerDetails, productDetails, total, discount,deductCreditBalance, subtotal, employeeDetails, saleReturnDate, status, paymentMethod, customerName, totalItems, totalQty, returnInvoiceRef } = req.body
 
         if (!customerDetails || !productDetails || !total || !subtotal || !employeeDetails || !saleReturnDate || !status || !totalItems || !totalQty || !customerName || !returnInvoiceRef) {
 
@@ -98,7 +99,7 @@ const SaleReturnController = {
         await Promise.all(updatePromises);
 
 
-        SaleReturnInvoiceModel.create(invoiceData).then((data) => {
+        SaleReturnInvoiceModel.create(invoiceData).then(async(data) => {
 
 
             if (!data) {
@@ -109,6 +110,21 @@ const SaleReturnController = {
                 })
                 return
             }
+
+
+            if (deductCreditBalance) {
+                try {
+                    const customer = await CustomerModel.findOne({ _id: customerDetails.id });
+                    if (customer) {
+                        customer.credit_balance -= subtotal; // Assuming the total amount is deducted from the credit balance
+                        await customer.save();
+                    }
+                } catch (error) {
+                    console.error("Error deducting credit balance:", error.message);
+                    // Handle error as needed
+                }
+            }
+    
 
             res.json({
                 message: "Transaction Successful",
@@ -183,6 +199,38 @@ const SaleReturnController = {
             const invoices = await SaleReturnInvoiceModel.find({
                 saleReturnDate: { $gte: todayStart.toDate(), $lt: todayEnd.toDate() }
             });
+
+            if (!invoices || invoices.length === 0) {
+                res.json({
+                    message: "No invoices found for the specified employee and date",
+                    status: true,
+                    data: []
+                });
+                return;
+            }
+
+
+            res.json({
+                message: "Invoices successfully retrieved",
+                status: true,
+                data: invoices
+            });
+        } catch (error) {
+            console.log(error, "error")
+            res.json({
+                message: "Internal Server Error",
+                status: false,
+                error: error.message
+            });
+        }
+
+    },
+    getAllInvoices: async (req, res) => {
+
+
+        try {
+
+            const invoices = await SaleReturnInvoiceModel.find({});
 
             if (!invoices || invoices.length === 0) {
                 res.json({

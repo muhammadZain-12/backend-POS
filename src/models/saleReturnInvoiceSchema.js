@@ -15,6 +15,9 @@ const SaleReturnInvoiceSchema = mongoose.Schema({
     customerType: {
         type: String
     },
+    deductCreditBalance:{
+        type : Boolean
+    },
     employeeDetails: {
         type: [mongoose.Schema.Types.Mixed],
         required: true
