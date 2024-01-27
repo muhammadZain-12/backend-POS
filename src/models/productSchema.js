@@ -30,6 +30,18 @@ const productSchema = mongoose.Schema({
     supplier_series: {
         type: String
     },
+    supplier_name : {
+        type : String
+    },
+    supplier_address : {
+        type : String,
+    },
+    supplier_mobile_number : {
+        type : String
+    },
+    supplier_id : {
+        type : String
+    },
     department: {
         type: String,
         required: true
@@ -45,7 +57,7 @@ const productSchema = mongoose.Schema({
     make: {
         type: String,
         required: true,
-        default: 1
+    
     },
     model: {
         type: String,
@@ -54,7 +66,7 @@ const productSchema = mongoose.Schema({
     qty: {
         type: Number,
         required: true,
-        default: 1
+        
     },
     reminder_qty: {
         type: Number,
@@ -122,7 +134,13 @@ const productSchema = mongoose.Schema({
     IMEI: {
         type: Number,
     },
+    warranty: {
+        type: Boolean
+    },
+    warranty_duration: {
+        type: String,
 
+    },
     status: {
         type: String,
         required: true,

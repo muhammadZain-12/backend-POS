@@ -14,6 +14,9 @@ const InvoiceController = require("../controllers/invoiceController")
 const vatController = require("../controllers/vatController")
 const DemandedProductController = require("../controllers/DemandedProductController")
 const SaleReturnController = require("../controllers/saleReturnController")
+const ClaimInvoiceController = require("../controllers/claimInvoiceController")
+const SupplierController = require("../controllers/supplierController")
+const ArrangeProductController = require("../controllers/arrangeProductController")
 
 
 require("dotenv").config()
@@ -107,6 +110,25 @@ router.post("/api/SaleReturnDamage", authenticateMiddleware, SaleReturnControlle
 router.get("/api/getReturnInvoices/:id", authenticateMiddleware, SaleReturnController.getEmployeeDayInvoices)
 router.get("/api/getDayAllReturnInvoices", authenticateMiddleware, SaleReturnController.getDayAllInvoices)
 router.get("/api/getAllReturnInvoices", authenticateMiddleware, SaleReturnController.getAllInvoices)
+router.post("/api/createClaimInvoice", authenticateMiddleware, ClaimInvoiceController.post)
+router.post("/api/addWarrantyProduct", authenticateMiddleware, ClaimInvoiceController.addWarrantyProducts)
+
+
+router.get("/api/getClaimInvoices/:id", authenticateMiddleware, ClaimInvoiceController.getEmployeeDayClaimInvoices)
+router.get("/api/getDayAllClaimInvoices", authenticateMiddleware, ClaimInvoiceController.getDayAllClaimInvoices)
+router.get("/api/getAllClaimInvoices", authenticateMiddleware, ClaimInvoiceController.getAllClaimInvoices)
+
+
+
+router.get("/api/getWarrantyInvoices/:id", authenticateMiddleware, ClaimInvoiceController.getEmployeeDayWarrantyInvoices)
+router.get("/api/getDayAllWarrantyInvoices", authenticateMiddleware, ClaimInvoiceController.getDayAllWarrantyInvoices)
+router.get("/api/getAllWarrantyInvoices", authenticateMiddleware, ClaimInvoiceController.getAllWarrantyInvoices)
+
+router.post("/api/addSupplier", authenticateMiddleware, SupplierController.post)
+
+router.get("/api/getSuppliers", authenticateMiddleware, SupplierController.get)
+
+router.post("/api/addArrangeProduct",authenticateMiddleware,ArrangeProductController.post)
 
 
 

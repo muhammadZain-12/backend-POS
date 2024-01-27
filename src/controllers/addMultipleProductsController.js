@@ -62,8 +62,8 @@ const AddMultipleProductsController = {
                     trade_price: e.trade_price,
                     warehouse_price: e.warehouse_price,
                     retail_price: e.retail_price,
-                    cost_price_w_vat: e.cost_price_w_vat,
-                    trade_price_w_vat: e.trade_price_w_vat,
+                    cost_price_w_vat: e?.cost_price_w_vat,
+                    trade_price_w_vat: e?.trade_price_w_vat,
                     warehouse_price_w_vat: e.warehouse_price_w_vat,
                     retail_price_w_vat: e.retail_price_w_vat,
                     transportation_price: e.transportation_price,
@@ -71,9 +71,11 @@ const AddMultipleProductsController = {
                     other_expense: e.other_expense,
                     other_expense_w_vat: e.other_expense_w_vat,
                     minimum_sale: e.minimumSale,
-                    minimum_stock: e.minimumStock,
-                    barcode: e.barCode,
-                    status: e.status
+                    warranty: e?.warranty,
+                    warranty_duration: e?.warranty_duration,
+                    minimum_stock: e?.minimumStock,
+                    barcode: e?.barCode,
+                    status: e?.status
 
                 }
             } else {

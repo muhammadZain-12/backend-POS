@@ -37,13 +37,15 @@ const AddProductController = {
             other_expense_w_vat,
             minimumSale,
             minimumStock,
+            warranty,
+            warranty_duration,
             IMEI,
             barCode,
             status
         } = req.body
 
 
-        if (!ProductName || !department || !category || !Sub_Category || !make || !model || !barCode || !cost_price || !trade_price || !retail_price || !warehouse_price || !warehouse_price_w_vat || !cost_price_w_vat || !trade_price_w_vat || !retail_price_w_vat) {
+        if (!ProductName || !department || !category || !Sub_Category || !make || !model || !barCode || !cost_price || !trade_price || !retail_price || !warehouse_price) {
 
 
             res.json({
@@ -52,7 +54,6 @@ const AddProductController = {
             })
             return
         }
-
 
 
         let dataToSend = {
@@ -84,6 +85,9 @@ const AddProductController = {
             transportation_price_w_vat: transportation_price_w_vat,
             other_expense: other_expense,
             other_expense_w_vat: other_expense_w_vat,
+            warranty: warranty,
+            IMEI: IMEI,
+            warranty_duration: warranty_duration,
             minimum_sale: minimumSale,
             minimum_stock: minimumStock,
             barcode: barCode,

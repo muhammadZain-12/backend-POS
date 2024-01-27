@@ -2,7 +2,7 @@ const mongoose = require("mongoose")
 
 
 
-const damageProductSchema = mongoose.Schema({
+const claimProductSchema = mongoose.Schema({
 
     product_name: {
         type: String,
@@ -121,15 +121,15 @@ const damageProductSchema = mongoose.Schema({
         default: "Damage"
 
     },
+    created_at: {
+        type: Date,
+        default: Date.now, // Set the default value to the current timestamp when a document is created
+    },
     warranty : {
         type : Boolean
     },
     warranty_duration : {
         type : String
-    },
-    created_at: {
-        type: Date,
-        default: Date.now, // Set the default value to the current timestamp when a document is created
     },
     barcode: {
         type: Number,
@@ -139,9 +139,9 @@ const damageProductSchema = mongoose.Schema({
 
 })
 
-const damageProductModel = mongoose.model("Damageproducts", damageProductSchema)
+const claimProductModel = mongoose.model("Claimproducts", claimProductSchema)
 
-module.exports = damageProductModel
+module.exports = claimProductModel
 
 
 
