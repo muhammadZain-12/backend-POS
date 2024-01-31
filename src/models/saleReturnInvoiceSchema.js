@@ -43,6 +43,12 @@ const SaleReturnInvoiceSchema = mongoose.Schema({
     vatAmount: {
         type: Number,
     },
+    vatNumber: {
+        type: String,
+    },
+    companyNumber: {
+        type: String,
+    },
     totalItems: {
         type: Number,
         required: true

@@ -140,7 +140,6 @@ const AddProductController = {
 
         try {
 
-
             let data = await productModel.find({})
 
             res.json({
@@ -157,7 +156,90 @@ const AddProductController = {
             })
 
         }
+    },
+    delete: async (req, res) => {
+        try {
+            const productIds = req.body.map(product => product._id);
+
+            if (!productIds || productIds.length === 0) {
+                return res.json({
+                    message: "Invalid request. Product IDs are missing.",
+                    status: false,
+                });
+            }
+
+            const result = await productModel.deleteMany({ _id: { $in: productIds } });
+
+
+            if (result.deletedCount > 0) {
+                res.json({
+                    message: "Products successfully deleted",
+                    status: true,
+                    data: result,
+                });
+            } else {
+                res.json({
+                    message: "Products not found or already deleted",
+                    status: false,
+                    data: result,
+                });
+            }
+        } catch (error) {
+            console.error('Error deleting products:', error);
+            res.status(500).json({
+                message: "Internal Server Error",
+                status: false,
+                data: null,
+            });
+        }
+    },
+    changeStatus: async (req, res) => {
+        try {
+            const products = req.body;
+
+            if (!Array.isArray(products) || products.length === 0) {
+                return res.json({
+                    message: "Invalid request. Products array is required.",
+                    status: false,
+                });
+            }
+
+            // Extract product IDs and new status from the array
+            const productUpdates = products.map(product => ({
+                updateOne: {
+                    filter: { _id: product._id },
+                    update: { $set: { status: product.status } },
+                },
+            }));
+
+            // Update the status of products
+            const result = await productModel.bulkWrite(productUpdates);
+
+            if (result.modifiedCount > 0) {
+                res.json({
+                    message: "Products status successfully changed",
+                    status: true,
+                    data: result,
+                });
+            } else {
+                res.json({
+                    message: "No products found or status already set to the desired value",
+                    status: false,
+                    data: result,
+                });
+            }
+        } catch (error) {
+            console.error('Error changing product status:', error);
+            res.status(500).json({
+                message: "Internal Server Error",
+                status: false,
+                data: null,
+            });
+        }
     }
+
+
+
 
 }
 

@@ -17,6 +17,7 @@ const SaleReturnController = require("../controllers/saleReturnController")
 const ClaimInvoiceController = require("../controllers/claimInvoiceController")
 const SupplierController = require("../controllers/supplierController")
 const ArrangeProductController = require("../controllers/arrangeProductController")
+const TrashProductController = require("../controllers/trashProductController")
 
 
 require("dotenv").config()
@@ -69,6 +70,7 @@ const checkRole = (req, res, next) => {
 
     let data = req.user
 
+
     if (data.role == "employee" || data.role == "admin") {
 
         next()
@@ -93,12 +95,17 @@ router.get("/api/getEmployeeDetails", authenticateMiddleware, EmployeeDetailsCon
 router.post("/api/addProduct", authenticateMiddleware, checkRole, AddProductController.post)
 router.post("/api/addMultipleProducts", authenticateMiddleware, checkRole, AddMultipleProductsController.post)
 router.get("/api/getProducts", authenticateMiddleware, checkRole, AddProductController.get)
+router.delete("/api/deleteproducts", authenticateMiddleware, checkRole, AddProductController.delete)
+router.put("/api/changeProductStatus", authenticateMiddleware, checkRole, AddProductController.changeStatus)
+
+
+
 router.post("/api/uploadProductImage", authenticateMiddleware, checkRole, productImages.single('productImages'), UploadProductImageController.post)
 router.post("/api/createCustomer", authenticateMiddleware, CustomerController.post)
 router.get("/api/getCustomers", authenticateMiddleware, CustomerController.get)
 router.put("/api/updateCustomer", authenticateMiddleware, checkRole, CustomerController.put)
 router.delete("/api/deleteCustomer/:id", authenticateMiddleware, checkRole, CustomerController.delete)
-router.post("/api/sendEmailToCustomer", authenticateMiddleware, checkRole, EmailController.post)
+router.post("/api/sendEmailToCustomer", authenticateMiddleware, EmailController.post)
 router.post("/api/createInvoice", authenticateMiddleware, InvoiceController.post)
 router.get("/api/getInvoices/:id", authenticateMiddleware, InvoiceController.get)
 router.get("/api/getDayAllInvoices", authenticateMiddleware, InvoiceController.getDayAll)
@@ -128,8 +135,10 @@ router.post("/api/addSupplier", authenticateMiddleware, SupplierController.post)
 
 router.get("/api/getSuppliers", authenticateMiddleware, SupplierController.get)
 
-router.post("/api/addArrangeProduct",authenticateMiddleware,ArrangeProductController.post)
+router.post("/api/addArrangeProduct", authenticateMiddleware, ArrangeProductController.post)
 
+
+router.get("/api/getTrashProducts", authenticateMiddleware, checkRole, TrashProductController.get)
 
 
 

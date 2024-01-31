@@ -7,10 +7,18 @@ const CustomerSchema = mongoose.Schema({
 
     customer_name: {
         type: String,
-        // required: true
+        required: true
     },
-    credit_balance : {
-        type : Number,
+    business_name: {
+        type: String,
+        required: true
+    },
+    accountNo: {
+        type: Number,
+        required: true
+},
+    credit_balance: {
+        type: Number,
     },
     comment: {
         type: String,
@@ -31,16 +39,14 @@ const CustomerSchema = mongoose.Schema({
 
     email: {
         type: String,
+        required: true
         // Set the default value to the current timestamp when a document is created
     },
     postal_code: {
         type: Number,
         // Set the default value to the current timestamp when a document is created
     },
-    legal_status: {
-        type: String,
-        // Set the default value to the current timestamp when a document is created
-    },
+
     telephone_no: {
         type: String,
         // Set the default value to the current timestamp when a document is created
@@ -51,28 +57,24 @@ const CustomerSchema = mongoose.Schema({
     },
     mobile_number: {
         type: String,
-        // Set the default value to the current timestamp when a document is created
-    },
-    fax: {
-        type: String,
+        required: true
         // Set the default value to the current timestamp when a document is created
     },
     account_manager: {
         type: String,
+
         // Set the default value to the current timestamp when a document is created
     },
     credit_limits: {
         type: Number
     },
-
     credit_days: {
         type: Number
     },
-    discount: {
-        type: Number
-    },
+
     price_level: {
         type: [mongoose.Schema.Types.Mixed],
+        required: true
     },
     order_location: {
         type: [mongoose.Schema.Types.Mixed]

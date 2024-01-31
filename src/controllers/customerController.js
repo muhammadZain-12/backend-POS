@@ -3,8 +3,10 @@ const CustomerModel = require("../models/customerSchema")
 
 function convertToObject(data) {
 
+    let date;
 
-    let date = data.created_at
+    if(data?.created_at){
+    date = data.created_at
 
     const day = date.getDate(); // 15
     const month = date.getMonth() + 1; // Months are zero-based, so January is 0
@@ -12,21 +14,22 @@ function convertToObject(data) {
 
 
     date = `${day}/${month}/${year}`
-
+}
     return {
         customerName: data.customer_name,
+        businessName: data?.business_name,
+        accountNo: data?.accountNo,
         id: data._id,
         created_at: date,
         address: data.address,
         city: data.city,
         email: data.email,
         postalCode: data.postal_code,
-        legalStatus: data.legal_status,
         telephoneNo: data.telephone_no,
+
         telephoneNo2: data.telephone_no2,
         comment: data.comment,
         mobileNumber: data.mobile_number,
-        fax: data.fax,
         accountManager: data.account_manager,
         orderLocation: data.order_location,
         creditLimits: data.credit_limits,
@@ -34,7 +37,7 @@ function convertToObject(data) {
         discount: data.discount,
         priceLevel: data.price_level,
         deliveryAddress: data.delivery_address,
-        creditBalance : data?.credit_balance,
+        creditBalance: data?.credit_balance,
         deliveryCity: data.delivery_city,
         deliveryPostalCode: data?.delivery_postal_code
     };
@@ -51,20 +54,21 @@ const CustomerController = {
         let dataToSend = {
 
             customer_name: data.customerName,
+            business_name: data.businessName,
+            accountNo: data.accountNo,
             created_at: data.created_at,
             address: data.address,
             city: data.city,
             email: data.email,
             postal_code: data.postalCode,
-            legal_status: data.legalStatus,
             telephone_no: data.telephoneNo,
             telephone_no2: data.telephoneNo2,
             mobile_number: data.mobileNumber,
-            fax: data.fax,
             account_manager: data.accountManager,
             order_location: data.orderLocation,
             credit_limits: data.creditLimits,
             credit_days: data.creditDays,
+
             discount: data.discount,
             price_level: data.priceLevel,
         }
@@ -85,6 +89,7 @@ const CustomerController = {
 
                 let convertedArray = [data].map(convertToObject);
 
+                console.log(convertedArray, "ARRAY")
 
                 res.json({
                     message: 'Customer created successfully',
@@ -95,6 +100,8 @@ const CustomerController = {
             }
 
         }).catch((error) => {
+
+            console.log(error, "error")
 
             res.json({
                 message: 'Internal Server Error',
@@ -129,6 +136,8 @@ const CustomerController = {
 
                 let convertedArray = data.map(convertToObject);
 
+                console.log(convertedArray,"convetedArray")
+
                 res.json({
 
                     message: "Customers Successfully Get",
@@ -140,6 +149,8 @@ const CustomerController = {
             }
 
         }).catch((error) => {
+
+            console.log(error,"error")
 
             res.json({
                 message: "Internal Server Error",
@@ -159,18 +170,18 @@ const CustomerController = {
         let dataToSend = {
 
             customer_name: data.customerName,
+            business_name: data?.businessName,
+            accountNo: data?.accountNo,
             created_at: data.created_at,
             address: data.address,
             city: data.city,
             _id: data.id,
             email: data.email,
             postal_code: data.postalCode,
-            legal_status: data.legalStatus,
             telephone_no: data.telephoneNo,
             telephone_no2: data.telephoneNo2,
             comment: data.comment,
             mobile_number: data.mobileNumber,
-            fax: data.fax,
             account_manager: data.accountManager,
             order_location: data.orderLocation,
             credit_limits: data.creditLimits,

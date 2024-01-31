@@ -12,7 +12,7 @@ const productSchema = mongoose.Schema({
         type: String,
     },
     product_color: {
-        type: [String] || String,
+        type: [String],
     },
     image1_url: {
         type: String,
@@ -30,17 +30,17 @@ const productSchema = mongoose.Schema({
     supplier_series: {
         type: String
     },
-    supplier_name : {
-        type : String
+    supplier_name: {
+        type: String
     },
-    supplier_address : {
-        type : String,
+    supplier_address: {
+        type: String,
     },
-    supplier_mobile_number : {
-        type : String
+    supplier_mobile_number: {
+        type: String
     },
-    supplier_id : {
-        type : String
+    supplier_id: {
+        type: String
     },
     department: {
         type: String,
@@ -57,7 +57,7 @@ const productSchema = mongoose.Schema({
     make: {
         type: String,
         required: true,
-    
+
     },
     model: {
         type: String,
@@ -66,7 +66,7 @@ const productSchema = mongoose.Schema({
     qty: {
         type: Number,
         required: true,
-        
+
     },
     reminder_qty: {
         type: Number,
@@ -74,7 +74,6 @@ const productSchema = mongoose.Schema({
     cost_price: {
         type: Number,
         required: true,
-
     },
     trade_price: {
         type: Number,

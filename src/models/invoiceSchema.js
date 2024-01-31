@@ -33,13 +33,24 @@ const InvoiceSchema = mongoose.Schema({
     subtotal: {
         type: Number,
         required: true
-
     },
     costPrice: {
         type: Number
     },
+    totalQty: {
+        type: Number
+    },
     vatAmount: {
         type: Number,
+    },
+    companyNumber : {
+        type : String
+    },
+    vatNumber : {
+        type : String
+},
+    creditDays : {
+        type : Number
     },
     totalItems: {
         type: Number,

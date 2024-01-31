@@ -8,6 +8,10 @@ const vatSchema = mongoose.Schema({
         type: Number,
         required: true
     },
+    vatNumber: {
+        type: String,
+        required: true
+    },
 
 })
 
