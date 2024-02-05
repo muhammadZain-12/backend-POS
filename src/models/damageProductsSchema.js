@@ -8,6 +8,9 @@ const damageProductSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    id : {
+        type : String
+    },
     product_description: {
         type: String,
     },

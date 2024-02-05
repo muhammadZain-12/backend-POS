@@ -5,7 +5,7 @@ const DemandedProductModel = require("../models/demandedProduct")
 const DemandedProductController = {
 
 
-    
+
     post: async (req, res) => {
 
         let { productName } = req.body
@@ -115,7 +115,75 @@ const DemandedProductController = {
 
 
 
-    }
+    },
+
+    get: async (req, res) => {
+
+        DemandedProductModel.find({}).then(data => {
+
+            if (data && data.length == 0) {
+
+                res.json({
+                    message: "No Data Found",
+                    status: false
+                })
+                return
+            }
+
+            res.json({
+                message: "Product Successfully Get",
+                status: true,
+                data: data
+            })
+
+        }).catch((error) => {
+
+            res.json({
+                message: error.message,
+                status: false
+            })
+            return
+        })
+
+    },
+    delete: async (req, res) => {
+        try {
+
+            console.log(req.body,"bodyy")
+
+            const productIds = req.body.map(product => product._id);
+
+            if (!productIds || productIds.length === 0) {
+                return res.json({
+                    message: "Invalid request. Product IDs are missing.",
+                    status: false,
+                });
+            }
+
+            const result = await DemandedProductModel.deleteMany({ _id: { $in: productIds } });
+
+            if (result.deletedCount > 0) {
+                res.json({
+                    message: "Products successfully deleted",
+                    status: true,
+                    data: result,
+                });
+            } else {
+                res.json({
+                    message: "Products not found or already deleted",
+                    status: false,
+                    data: result,
+                });
+            }
+        } catch (error) {
+            console.error('Error deleting products:', error);
+            res.status(500).json({
+                message: "Internal Server Error",
+                status: false,
+                data: null,
+            });
+        }
+    },
 
 }
 

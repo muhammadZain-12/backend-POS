@@ -18,6 +18,8 @@ const ClaimInvoiceController = require("../controllers/claimInvoiceController")
 const SupplierController = require("../controllers/supplierController")
 const ArrangeProductController = require("../controllers/arrangeProductController")
 const TrashProductController = require("../controllers/trashProductController")
+const DepartmentController = require("../controllers/departmentController")
+const DamageProductController = require("../controllers/damageProductController")
 
 
 require("dotenv").config()
@@ -70,7 +72,6 @@ const checkRole = (req, res, next) => {
 
     let data = req.user
 
-
     if (data.role == "employee" || data.role == "admin") {
 
         next()
@@ -112,7 +113,13 @@ router.get("/api/getDayAllInvoices", authenticateMiddleware, InvoiceController.g
 router.get("/api/getAllInvoices", authenticateMiddleware, InvoiceController.getAll)
 router.get("/api/getVat", authenticateMiddleware, vatController.get)
 router.put("/api/changeVat", authenticateMiddleware, vatController.put)
+
 router.post("/api/AddDemandedProduct", authenticateMiddleware, DemandedProductController.post)
+router.get("/api/getDemandedProduct", authenticateMiddleware, DemandedProductController.get)
+router.delete("/api/deleteDemandedProducts", authenticateMiddleware, DemandedProductController.delete)
+
+
+
 router.post("/api/SaleReturnDamage", authenticateMiddleware, SaleReturnController.post)
 router.get("/api/getReturnInvoices/:id", authenticateMiddleware, SaleReturnController.getEmployeeDayInvoices)
 router.get("/api/getDayAllReturnInvoices", authenticateMiddleware, SaleReturnController.getDayAllInvoices)
@@ -139,6 +146,24 @@ router.post("/api/addArrangeProduct", authenticateMiddleware, ArrangeProductCont
 
 
 router.get("/api/getTrashProducts", authenticateMiddleware, checkRole, TrashProductController.get)
+router.post("/api/addTrashProductsInDamages", authenticateMiddleware, checkRole, TrashProductController.addTrashProductInDamage)
+router.post("/api/addTrashProductsInInventory", authenticateMiddleware, checkRole, TrashProductController.addTrashProductInInventory)
+
+
+
+router.get("/api/getDamageProducts", authenticateMiddleware, checkRole, DamageProductController.get)
+router.post("/api/addDamageProducts", authenticateMiddleware, checkRole, DamageProductController.addProduct)
+router.post("/api/addDamageProductsInInventory", authenticateMiddleware, checkRole, DamageProductController.addDamageProductInInventory)
+router.post("/api/addDamageProductsInTrash", authenticateMiddleware, checkRole, DamageProductController.addDamageProductInTrash)
+
+
+
+router.post("/api/addProductDepartment", authenticateMiddleware, checkRole, DepartmentController.addDepartment)
+router.get("/api/getProductDepartment", authenticateMiddleware, checkRole, DepartmentController.getDepartment)
+router.post("/api/addProductCategory", authenticateMiddleware, checkRole, DepartmentController.addCategory)
+router.post("/api/addProductSubcategory", authenticateMiddleware, checkRole, DepartmentController.addSubcategory)
+
+
 
 
 
