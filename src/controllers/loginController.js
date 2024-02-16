@@ -65,6 +65,7 @@ let LoginController = {
                 password: findUser?.password,
                 confirmPassword: findUser.confirm_password,
                 role: findUser?.role,
+                show_price:findUser?.show_price,
                 time: time,
 
               }
@@ -76,7 +77,9 @@ let LoginController = {
                 employeeId: findUser?.employee_id,
                 emailAddress: findUser?.email_address,
                 fullName: findUser?.full_name,
-                time: Date.now()
+                time: Date.now(),
+                role : findUser?.role,
+                show_price : findUser?.show_price
               }
 
               data.token = token

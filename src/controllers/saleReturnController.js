@@ -16,7 +16,7 @@ const SaleReturnController = {
 
         invoiceData.invoiceNumber = totalInvoice + 1
 
-        let { customerDetails, productDetails, total, discount,deductCreditBalance, subtotal, employeeDetails, saleReturnDate, status, paymentMethod, customerName, totalItems, totalQty, returnInvoiceRef } = req.body
+        let { customerDetails,deductAmount, productDetails, lessAmount, total, discount, deductCreditBalance, subtotal, employeeDetails, saleReturnDate, status, paymentMethod, customerName, totalItems, totalQty, returnInvoiceRef } = req.body
 
         if (!customerDetails || !productDetails || !total || !subtotal || !employeeDetails || !saleReturnDate || !status || !totalItems || !totalQty || !customerName || !returnInvoiceRef) {
 
@@ -99,7 +99,7 @@ const SaleReturnController = {
         await Promise.all(updatePromises);
 
 
-        SaleReturnInvoiceModel.create(invoiceData).then(async(data) => {
+        SaleReturnInvoiceModel.create(invoiceData).then(async (data) => {
 
 
             if (!data) {
@@ -113,10 +113,15 @@ const SaleReturnController = {
 
 
             if (deductCreditBalance) {
+
                 try {
                     const customer = await CustomerModel.findOne({ _id: customerDetails.id });
                     if (customer) {
-                        customer.credit_balance -= subtotal; // Assuming the total amount is deducted from the credit balance
+
+
+
+                        let deductedBalance = lessAmount ? Number(customer?.credit_balance) : deductAmount ? Number(deductAmount) : Number(subtotal)
+                        customer.credit_balance -= deductedBalance; // Assuming the total amount is deducted from the credit balance
                         await customer.save();
                     }
                 } catch (error) {
@@ -124,7 +129,7 @@ const SaleReturnController = {
                     // Handle error as needed
                 }
             }
-    
+
 
             res.json({
                 message: "Transaction Successful",

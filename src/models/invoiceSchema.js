@@ -19,6 +19,11 @@ const InvoiceSchema = mongoose.Schema({
         type: [mongoose.Schema.Types.Mixed],
         required: true
     },
+    // barcode: {
+    //     type: Number,
+    //     unique: true,
+    //     required: true
+    // },
     employeeId: {
         type: String,
         required: true

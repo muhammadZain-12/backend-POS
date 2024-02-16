@@ -31,6 +31,10 @@ const userSchema = mongoose.Schema({
     role: {
         type: String,
         default: "employee"
+    },
+    show_price: {
+        type: Boolean,
+        default: false
     }
 
 })

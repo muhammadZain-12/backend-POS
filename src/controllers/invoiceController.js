@@ -13,8 +13,9 @@ const InvoiceController = {
         let totalInvoice = await InvoiceModel.countDocuments({})
 
         invoiceData.invoiceNumber = totalInvoice + 1
+        
 
-        let { customerDetails, productDetails, total, discount, subtotal, employeeDetails, status, paymentMethod, customerName, totalItems } = req.body
+        let { customerDetails, productDetails, total, discount, deductAmount,subtotal, employeeDetails, status, paymentMethod, customerName, totalItems } = req.body
 
         if (!customerDetails || !productDetails || !total || !subtotal || !employeeDetails ||  !status || !paymentMethod || !totalItems || !customerName) {
 
@@ -61,7 +62,7 @@ const InvoiceController = {
                     console.log(invoice, "invoice")
 
                     CustomerModel.findByIdAndUpdate(invoice.customerDetails[0]?.id, {
-                        $inc: { credit_balance: (invoice.subtotal) }
+                        $inc: { credit_balance: (deductAmount ? deductAmount : invoice.subtotal) }
                     }).then((data) => {
 
                         res.json({
