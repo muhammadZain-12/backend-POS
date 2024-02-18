@@ -7,12 +7,35 @@ const subcategorySchema = new mongoose.Schema({
   }
 });
 
+
+
+
+const categoryPerSchema = new mongoose.Schema({
+  a: {
+    type: Number,
+    required: true
+  },
+  b: {
+    type: Number,
+    required: true
+  },
+  c: {
+    type: Number,
+    required: true
+  }
+});
+
+
 const categorySchema = new mongoose.Schema({
   categoryName: {
     type: String,
     required: true
   },
-  subcategories: [subcategorySchema]
+  
+  subcategories: [subcategorySchema],
+  categoryPer: {
+    type: categoryPerSchema,
+  }
 });
 
 const departmentSchema = new mongoose.Schema({
@@ -20,7 +43,8 @@ const departmentSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  categories: [categorySchema]
+  categories: [categorySchema],
+  
 });
 
 const DepartmentModel = mongoose.model('Department', departmentSchema);

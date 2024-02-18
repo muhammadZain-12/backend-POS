@@ -51,7 +51,7 @@ const DepartmentController = {
         })
 
     },
-    
+
     getDepartment: async (req, res) => {
 
 
@@ -89,7 +89,7 @@ const DepartmentController = {
     },
     addCategory: async (req, res) => {
 
-        const { departmentName, categoryName } = req.body;
+        const { departmentName, categoryName, categoryPer } = req.body;
 
         console.log(departmentName, categoryName, "department and category");
 
@@ -100,6 +100,9 @@ const DepartmentController = {
             });
             return;
         }
+
+
+        console.log(categoryPer,"percentafe")
 
         try {
             // Find the department by name
@@ -114,7 +117,15 @@ const DepartmentController = {
             }
 
             // Add the category to the department
-            department.categories.push({ categoryName });
+            department.categories.push({ categoryName,
+                categoryPer: {
+                    a: Number(categoryPer.a),
+                    b: Number(categoryPer.b),
+                    c: Number(categoryPer.c)
+                }
+            });
+
+            console.log(department,"department")
             
             // Save the updated department
             const updatedDepartment = await department.save();
@@ -135,9 +146,9 @@ const DepartmentController = {
     },
     addSubcategory: async (req, res) => {
         const { departmentName, categoryName, subcategoryName } = req.body;
-    
+
         console.log(departmentName, categoryName, subcategoryName, "department, category, and subcategory");
-    
+
         if (!departmentName || !categoryName || !subcategoryName) {
             res.json({
                 message: "Department name, category name, or subcategory name is missing",
@@ -145,11 +156,11 @@ const DepartmentController = {
             });
             return;
         }
-    
+
         try {
             // Find the department by name
             const department = await DepartmentModel.findOne({ departmentName });
-    
+
             if (!department) {
                 res.json({
                     message: "Department not found",
@@ -157,10 +168,10 @@ const DepartmentController = {
                 });
                 return;
             }
-    
+
             // Find the category by name within the department
             const category = department.categories.find((c) => c.categoryName === categoryName);
-    
+
             if (!category) {
                 res.json({
                     message: "Category not found within the department",
@@ -168,19 +179,19 @@ const DepartmentController = {
                 });
                 return;
             }
-    
+
             // Add the subcategory to the category
             category.subcategories.push({ subcategoryName });
-    
+
             // Save the updated department
             const updatedDepartment = await department.save();
-    
+
             res.json({
                 message: "Subcategory successfully added to the category",
                 status: true,
                 data: updatedDepartment
             });
-    
+
         } catch (error) {
             res.json({
                 message: error.message,
@@ -189,7 +200,7 @@ const DepartmentController = {
             });
         }
     }
-    
+
 
 }
 

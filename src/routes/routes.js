@@ -165,6 +165,4 @@ router.post("/api/addProductSubcategory", authenticateMiddleware, checkRole, Dep
 
 
 
-
-
 module.exports = router
