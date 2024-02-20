@@ -28,6 +28,12 @@ const InvoiceSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    barcodeImagePath : {
+        type : String
+    },
+    barcodeNumber : {
+        type : Number
+    },
     total: {
         type: Number,
         required: true

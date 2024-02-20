@@ -75,8 +75,6 @@ const CustomerController = {
 
         CustomerModel.create(dataToSend).then((data) => {
 
-            console.log(data, "dataa")
-
             if (!data) {
                 res.json({
                     message: 'Internal Server Error',
@@ -89,7 +87,6 @@ const CustomerController = {
 
                 let convertedArray = [data].map(convertToObject);
 
-                console.log(convertedArray, "ARRAY")
 
                 res.json({
                     message: 'Customer created successfully',
@@ -136,7 +133,6 @@ const CustomerController = {
 
                 let convertedArray = data.map(convertToObject);
 
-                console.log(convertedArray,"convetedArray")
 
                 res.json({
 

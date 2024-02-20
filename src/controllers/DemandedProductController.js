@@ -149,7 +149,6 @@ const DemandedProductController = {
     delete: async (req, res) => {
         try {
 
-            console.log(req.body,"bodyy")
 
             const productIds = req.body.map(product => product._id);
 
