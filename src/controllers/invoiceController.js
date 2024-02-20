@@ -122,7 +122,7 @@ const InvoiceController = {
             return res.json({ message: "Transaction successful", status: true, data: createdInvoice });
         } catch (error) {
             console.error(error);
-            return res.status(500).json({ message: "Internal Server Error", status: false, error: error.message });
+            return res.status(500).json({ message: "Internal Server Error", status: false, error: error });
         }
     },
     get: async (req, res) => {
