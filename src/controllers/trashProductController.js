@@ -58,6 +58,22 @@ const TrashProductController = {
                 return;
             }
     
+            const ledgerEntry = {
+                date: new Date(),
+                qty: -product?.qty,
+                status: "trash to damage transfer",
+                cost_price: product?.cost_price,
+                retail_price: product?.retail_price,
+                warehouse_price: product?.warehouse_price,
+                trade_price: product?.trade_price,
+                supplierDetails: {
+                    supplier_name: product?.supplier_name,
+                    supplier_address: product?.supplier_address,
+                    supplier_mobile_number: product?.supplier_mobile_number,
+                    supplier_id: product?.supplier_id
+                },
+            };
+
             try {
                 // Try to find the existing damage product
                 const existingTrashProduct = await trashProductModel.findOne({ barcode: product.barcode });
@@ -65,6 +81,7 @@ const TrashProductController = {
                 if (existingTrashProduct) {
                     // If the damage product already exists, update the damage quantity
                     existingTrashProduct.qty -= Number(product.DamageQty);
+                    existingTrashProduct.productLedger.push(ledgerEntry)
                     await existingTrashProduct.save();
                 } else {
     
@@ -78,13 +95,30 @@ const TrashProductController = {
                 }
     
     
+                const myLedgerEntry = {
+                    date: new Date(),
+                    qty: product?.qty,
+                    status: "trash to damage transfer",
+                    cost_price: product?.cost_price,
+                    retail_price: product?.retail_price,
+                    warehouse_price: product?.warehouse_price,
+                    trade_price: product?.trade_price,
+                    supplierDetails: {
+                        supplier_name: product?.supplier_name,
+                        supplier_address: product?.supplier_address,
+                        supplier_mobile_number: product?.supplier_mobile_number,
+                        supplier_id: product?.supplier_id
+                    },
+                };
                 const existingProduct = await damageProductModel.findOne({ barcode: product.barcode });
     
                 if (existingProduct) {
                     existingProduct.DamageQty += Number(product.DamageQty);
+                    existingProduct.productLedger.push(myLedgerEntry)
                     await existingProduct.save();
                 } else {
                     // If the damage product does not exist, create a new one
+                    product.productLedger = myLedgerEntry
                     await damageProductModel.create(product);
                 }
     
@@ -112,6 +146,22 @@ const TrashProductController = {
             });
             return;
         }
+        
+        const ledgerEntry = {
+            date: new Date(),
+            qty: -product?.DamageQty,
+            status: "Trash to inventory transfer",
+            cost_price: product?.cost_price,
+            retail_price: product?.retail_price,
+            warehouse_price: product?.warehouse_price,
+            trade_price: product?.trade_price,
+            supplierDetails: {
+                supplier_name: product?.supplier_name,
+                supplier_address: product?.supplier_address,
+                supplier_mobile_number: product?.supplier_mobile_number,
+                supplier_id: product?.supplier_id
+            },
+        };
 
         try {
             // Try to find the existing damage product
@@ -120,6 +170,7 @@ const TrashProductController = {
             if (existingTrashProduct) {
                 // If the damage product already exists, update the damage quantity
                 existingTrashProduct.qty -= Number(product.DamageQty);
+                existingTrashProduct.productLedger.push(ledgerEntry)
                 await existingTrashProduct.save();
             } else {
 
@@ -133,10 +184,28 @@ const TrashProductController = {
             }
 
 
+            const myLedgerEntry = {
+                date: new Date(),
+                qty: product?.DamageQty,
+                status: "Trash to inventory transfer",
+                cost_price: product?.cost_price,
+                retail_price: product?.retail_price,
+                warehouse_price: product?.warehouse_price,
+                trade_price: product?.trade_price,
+                supplierDetails: {
+                    supplier_name: product?.supplier_name,
+                    supplier_address: product?.supplier_address,
+                    supplier_mobile_number: product?.supplier_mobile_number,
+                    supplier_id: product?.supplier_id
+                },
+            };
+    
+
             const existingProduct = await productModel.findOne({ barcode: product.barcode });
 
             if (existingProduct) {
                 existingProduct.qty += Number(product.DamageQty);
+                existingProduct.productLedger.push(myLedgerEntry)
                 await existingProduct.save();
             } else {
                 res.json({

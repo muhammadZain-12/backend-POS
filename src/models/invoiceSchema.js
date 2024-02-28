@@ -28,12 +28,7 @@ const InvoiceSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    barcodeImagePath : {
-        type : String
-    },
-    barcodeNumber : {
-        type : Number
-    },
+
     total: {
         type: Number,
         required: true
@@ -48,20 +43,26 @@ const InvoiceSchema = mongoose.Schema({
     costPrice: {
         type: Number
     },
+    barcodeImagePath: {
+        type: String
+    },
+    barcodeNumber: {
+        type: Number
+    },
     totalQty: {
         type: Number
     },
     vatAmount: {
         type: Number,
     },
-    companyNumber : {
-        type : String
+    companyNumber: {
+        type: String
     },
-    vatNumber : {
-        type : String
-},
-    creditDays : {
-        type : Number
+    vatNumber: {
+        type: String
+    },
+    creditDays: {
+        type: Number
     },
     totalItems: {
         type: Number,
@@ -101,6 +102,9 @@ const InvoiceSchema = mongoose.Schema({
     },
     clear_date: {
         type: Date
+    },
+    credit_days: {
+        type: Number
     },
 
 

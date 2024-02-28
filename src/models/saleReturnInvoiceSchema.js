@@ -40,6 +40,12 @@ const SaleReturnInvoiceSchema = mongoose.Schema({
     costPrice: {
         type: Number,
     },
+    barcodeImagePath : {
+        type : String
+    },
+    barcodeNumber : {
+        type : Number
+    },
     vatAmount: {
         type: Number,
     },
@@ -95,6 +101,9 @@ const SaleReturnInvoiceSchema = mongoose.Schema({
     },
     bank_name: {
         type: String
+    },
+    credit_days : {
+        type : Number
     },
     clear_date: {
         type: Date

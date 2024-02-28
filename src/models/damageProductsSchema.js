@@ -8,14 +8,14 @@ const damageProductSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    id : {
-        type : String
+    id: {
+        type: String
     },
     product_description: {
         type: String,
     },
     product_color: {
-        type: [String] || String,
+        String,
     },
     image1_url: {
         type: String,
@@ -26,12 +26,6 @@ const damageProductSchema = mongoose.Schema({
     },
     image3_url: {
         type: String,
-    },
-    supplier_code: {
-        type: String
-    },
-    supplier_series: {
-        type: String
     },
     department: {
         type: String,
@@ -65,6 +59,7 @@ const damageProductSchema = mongoose.Schema({
         type: Number,
         required: true,
     },
+    
     warehouse_price: {
         type: Number,
         required: true,
@@ -75,46 +70,6 @@ const damageProductSchema = mongoose.Schema({
         required: true,
 
     },
-    cost_price_w_vat: {
-        type: Number,
-
-    },
-    trade_price_w_vat: {
-        type: Number,
-
-    },
-    warehouse_price_w_vat: {
-        type: Number,
-
-    },
-    retail_price_w_vat: {
-        type: Number,
-
-    },
-    retail_price_w_vat: {
-        type: Number,
-
-    },
-    transportation_price: {
-        type: Number,
-    },
-
-    transportation_price_w_vat: {
-        type: Number,
-    },
-
-    other_expense: {
-        type: Number,
-    },
-    other_expense_w_vat: {
-        type: Number,
-    },
-    minimum_sale: {
-        type: Number,
-    },
-    minimum_stock: {
-        type: Number,
-    },
     IMEI: {
         type: Number,
     },
@@ -124,11 +79,20 @@ const damageProductSchema = mongoose.Schema({
         default: "Damage"
 
     },
-    warranty : {
-        type : Boolean
+    compatibility: {
+        type: String
     },
-    warranty_duration : {
-        type : String
+    supplier_name: {
+        type: String
+    },
+    supplier_address: {
+        type: String,
+    },
+    supplier_mobile_number: {
+        type: String
+    },
+    supplier_id: {
+        type: String
     },
     created_at: {
         type: Date,
@@ -138,7 +102,67 @@ const damageProductSchema = mongoose.Schema({
         type: Number,
         unique: true,
         required: true
-    }
+    },
+    productLedger: [
+        {
+            date: { type: Date, default: Date.now },
+            qty: { type: Number, required: true },
+            status: {
+                type: String
+            },
+            cost_price: {
+                type: Number
+            },
+            retail_price: {
+                type: Number
+            },
+            discount_price: {
+                type: Number,
+            },
+            warehouse_price: {
+                type: Number
+            },
+            trade_price: {
+                type: Number
+            },
+            supplierDetails: {
+                supplier_name: { type: String },
+                supplier_address: { type: String },
+                supplier_mobile_number: { type: String },
+                supplier_id: {
+                    type: String
+                }
+            },
+            employeeId: {
+                type: String
+            },
+            employeeDetails: {
+                type: [mongoose.Schema.Types.Mixed],
+            },
+            invoiceDetails: {
+
+                customerDetails: {
+                    type: [mongoose.Schema.Types.Mixed],
+                    required: true
+                },
+                invoiceNumber: {
+                    type: String
+                },
+
+                status: {
+                    type: String
+                },
+                paymentMethod: {
+                    type: String
+                },
+                barcodeNumber: {
+                    type: Number
+                }
+
+
+            }
+        }
+    ]
 
 })
 

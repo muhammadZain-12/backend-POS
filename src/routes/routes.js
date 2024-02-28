@@ -20,6 +20,8 @@ const ArrangeProductController = require("../controllers/arrangeProductControlle
 const TrashProductController = require("../controllers/trashProductController")
 const DepartmentController = require("../controllers/departmentController")
 const DamageProductController = require("../controllers/damageProductController")
+const exchangeController = require("../controllers/exchangeController")
+const CashController = require("../controllers/cashController")
 
 
 require("dotenv").config()
@@ -94,6 +96,11 @@ router.post("/api/signUp", SignupController.post)
 router.post("/api/login", LoginController.post)
 router.get("/api/getEmployeeDetails", authenticateMiddleware, EmployeeDetailsController.get)
 router.post("/api/addProduct", authenticateMiddleware, checkRole, AddProductController.post)
+router.put("/api/RestockProduct", authenticateMiddleware, checkRole, AddProductController.put)
+
+
+
+
 router.post("/api/addMultipleProducts", authenticateMiddleware, checkRole, AddMultipleProductsController.post)
 router.get("/api/getProducts", authenticateMiddleware, checkRole, AddProductController.get)
 router.delete("/api/deleteproducts", authenticateMiddleware, checkRole, AddProductController.delete)
@@ -108,6 +115,8 @@ router.put("/api/updateCustomer", authenticateMiddleware, checkRole, CustomerCon
 router.delete("/api/deleteCustomer/:id", authenticateMiddleware, checkRole, CustomerController.delete)
 router.post("/api/sendEmailToCustomer", authenticateMiddleware, EmailController.post)
 router.post("/api/createInvoice", authenticateMiddleware, InvoiceController.post)
+
+
 router.get("/api/getInvoices/:id", authenticateMiddleware, InvoiceController.get)
 router.get("/api/getDayAllInvoices", authenticateMiddleware, InvoiceController.getDayAll)
 router.get("/api/getAllInvoices", authenticateMiddleware, InvoiceController.getAll)
@@ -139,9 +148,7 @@ router.get("/api/getDayAllWarrantyInvoices", authenticateMiddleware, ClaimInvoic
 router.get("/api/getAllWarrantyInvoices", authenticateMiddleware, ClaimInvoiceController.getAllWarrantyInvoices)
 
 router.post("/api/addSupplier", authenticateMiddleware, SupplierController.post)
-
 router.get("/api/getSuppliers", authenticateMiddleware, SupplierController.get)
-
 router.post("/api/addArrangeProduct", authenticateMiddleware, ArrangeProductController.post)
 
 
@@ -162,6 +169,17 @@ router.post("/api/addProductDepartment", authenticateMiddleware, checkRole, Depa
 router.get("/api/getProductDepartment", authenticateMiddleware, checkRole, DepartmentController.getDepartment)
 router.post("/api/addProductCategory", authenticateMiddleware, checkRole, DepartmentController.addCategory)
 router.post("/api/addProductSubcategory", authenticateMiddleware, checkRole, DepartmentController.addSubcategory)
+
+
+router.post("/api/createExchangeInvoice", authenticateMiddleware, exchangeController.post)
+router.get("/api/getExchangeInvoices/:id", authenticateMiddleware, exchangeController.get)
+router.get("/api/getDayAllExchangeInvoices", authenticateMiddleware, exchangeController.getDayAll)
+router.get("/api/getAllExchangeInvoices", authenticateMiddleware, exchangeController.getAll)
+
+
+
+router.get("/api/getCashBalance", authenticateMiddleware, CashController.getAll)
+router.get("/api/getDayCashBalance", authenticateMiddleware, CashController.getDay)
 
 
 

@@ -52,6 +52,26 @@ const DamageProductController = {
             return;
         }
 
+
+
+        const ledgerEntry = {
+            date: new Date(),
+            qty: product?.qty,
+            status: "damage",
+            cost_price: product?.cost_price,
+            retail_price: product?.retail_price,
+            warehouse_price: product?.warehouse_price,
+            trade_price: product?.trade_price,
+            supplierDetails: {
+                supplier_name: product?.supplier_name,
+                supplier_address: product?.supplier_address,
+                supplier_mobile_number: product?.supplier_mobile_number,
+                supplier_id: product?.supplier_id
+            },
+        };
+
+        product.productLedger = ledgerEntry
+
         try {
             // Try to find the existing damage product
             const existingDamageProduct = await damageProductModel.findOne({ barcode: product.barcode });
@@ -59,17 +79,37 @@ const DamageProductController = {
             if (existingDamageProduct) {
                 // If the damage product already exists, update the damage quantity
                 existingDamageProduct.DamageQty += Number(product.DamageQty);
+                existingDamageProduct?.productLedger?.push(ledgerEntry)
+
                 await existingDamageProduct.save();
             } else {
                 // If the damage product does not exist, create a new one
                 await damageProductModel.create(product);
             }
 
-
             const existingProduct = await productModel.findOne({ barcode: product.barcode });
 
             if (existingProduct) {
+
+                const myLedgerEntry = {
+                    date: new Date(),
+                    qty: -product?.qty,
+                    status: "damage",
+                    cost_price: product?.cost_price,
+                    retail_price: product?.retail_price,
+                    warehouse_price: product?.warehouse_price,
+                    trade_price: product?.trade_price,
+                    supplierDetails: {
+                        supplier_name: product?.supplier_name,
+                        supplier_address: product?.supplier_address,
+                        supplier_mobile_number: product?.supplier_mobile_number,
+                        supplier_id: product?.supplier_id
+                    },
+                };
+
+
                 existingProduct.qty -= Number(product.DamageQty);
+                existingProduct.productLedger.push(myLedgerEntry)
                 await existingProduct.save();
             } else {
                 res.json({
@@ -95,8 +135,6 @@ const DamageProductController = {
     addDamageProductInInventory: async (req, res) => {
         const product = req.body;
 
-        console.log(product, "products")
-
         if (!product?.barcode) {
             res.json({
                 message: "Kindly select product",
@@ -105,13 +143,37 @@ const DamageProductController = {
             return;
         }
 
+
+        console.log(product,"products")        
+
+
+        const ledgerEntry = {
+            date: new Date(),
+            qty: -product?.DamageQty,
+            status: "damage to inventory transfer",
+            cost_price: product?.cost_price,
+            retail_price: product?.retail_price,
+            warehouse_price: product?.warehouse_price,
+            trade_price: product?.trade_price,
+            supplierDetails: {
+                supplier_name: product?.supplier_name,
+                supplier_address: product?.supplier_address,
+                supplier_mobile_number: product?.supplier_mobile_number,
+                supplier_id: product?.supplier_id
+            },
+        };
+
         try {
             // Try to find the existing damage product
             const existingDamageProduct = await damageProductModel.findOne({ barcode: product.barcode });
 
+
+
+
             if (existingDamageProduct) {
                 // If the damage product already exists, update the damage quantity
                 existingDamageProduct.DamageQty -= Number(product.DamageQty);
+                existingDamageProduct.productLedger.push(ledgerEntry)
                 await existingDamageProduct.save();
             } else {
 
@@ -128,7 +190,25 @@ const DamageProductController = {
             const existingProduct = await productModel.findOne({ barcode: product.barcode });
 
             if (existingProduct) {
+
+                const myLedgerEntry = {
+                    date: new Date(),
+                    qty: product?.DamageQty,
+                    status: "damage to inventory transfer",
+                    cost_price: product?.cost_price,
+                    retail_price: product?.retail_price,
+                    warehouse_price: product?.warehouse_price,
+                    trade_price: product?.trade_price,
+                    supplierDetails: {
+                        supplier_name: product?.supplier_name,
+                        supplier_address: product?.supplier_address,
+                        supplier_mobile_number: product?.supplier_mobile_number,
+                        supplier_id: product?.supplier_id
+                    },
+                };
+
                 existingProduct.qty += Number(product.DamageQty);
+                existingProduct.productLedger.push(myLedgerEntry)
                 await existingProduct.save();
             } else {
                 res.json({
@@ -165,6 +245,24 @@ const DamageProductController = {
             return;
         }
 
+
+
+        const ledgerEntry = {
+            date: new Date(),
+            qty: -product?.DamageQty,
+            status: "damage to trash transfer",
+            cost_price: product?.cost_price,
+            retail_price: product?.retail_price,
+            warehouse_price: product?.warehouse_price,
+            trade_price: product?.trade_price,
+            supplierDetails: {
+                supplier_name: product?.supplier_name,
+                supplier_address: product?.supplier_address,
+                supplier_mobile_number: product?.supplier_mobile_number,
+                supplier_id: product?.supplier_id
+            },
+        };
+
         try {
             // Try to find the existing damage product
             const existingDamageProduct = await damageProductModel.findOne({ barcode: product.barcode });
@@ -172,6 +270,7 @@ const DamageProductController = {
             if (existingDamageProduct) {
                 // If the damage product already exists, update the damage quantity
                 existingDamageProduct.DamageQty -= Number(product.DamageQty);
+                existingDamageProduct.productLedger.push(ledgerEntry)
                 await existingDamageProduct.save();
             } else {
 
@@ -185,13 +284,32 @@ const DamageProductController = {
             }
 
 
+
+            const myLedgerEntry = {
+                date: new Date(),
+                qty: product?.DamageQty,
+                status: "damage to trash transfer",
+                cost_price: product?.cost_price,
+                retail_price: product?.retail_price,
+                warehouse_price: product?.warehouse_price,
+                trade_price: product?.trade_price,
+                supplierDetails: {
+                    supplier_name: product?.supplier_name,
+                    supplier_address: product?.supplier_address,
+                    supplier_mobile_number: product?.supplier_mobile_number,
+                    supplier_id: product?.supplier_id
+                },
+            };
+
             const existingProduct = await trashProductModel.findOne({ barcode: product.barcode });
 
             if (existingProduct) {
                 existingProduct.qty += Number(product.DamageQty);
+                existingProduct.productLedger.push(myLedgerEntry)
                 await existingProduct.save();
             } else {
                 // If the damage product does not exist, create a new one
+                product.productLedger = myLedgerEntry
                 await trashProductModel.create(product);
             }
 
@@ -201,7 +319,7 @@ const DamageProductController = {
             });
 
         } catch (error) {
-            console.log(error,"error")
+            console.log(error, "error")
             res.json({
                 message: "Internal Server Error",
                 status: false,

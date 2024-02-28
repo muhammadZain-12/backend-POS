@@ -6,6 +6,7 @@ const multer = require("multer") // Set the destination folder for uploaded file
 const bwipjs = require("bwip-js")
 const fs = require('fs');
 const path = require("path")
+const cashModel = require("../models/cashSchema")
 
 
 
@@ -23,7 +24,7 @@ function generateBarcode(barcodeNumber, imagePath) {
                 console.error(err);
                 reject(new Error("Error generating barcode"));
             } else {
-                
+
                 fs.writeFile(imagePath, png, function (err) {
                     if (err) {
                         console.error(err);
@@ -33,7 +34,7 @@ function generateBarcode(barcodeNumber, imagePath) {
                         console.log('Barcode image generated successfully.');
                     }
                 });
-                
+
                 // fs.writeFile(imagePath, png)
                 //     .then(() => {
                 //         console.log("Barcode image saved successfully");
@@ -54,12 +55,33 @@ async function updateCustomerCreditBalance(customerId, subtotal, deductAmount) {
 
 
     const updateAmount = deductAmount ? deductAmount : subtotal;
-    
-        console.log(updateAmount,"updateAmount")
 
-        console.log(customerId,"customerId")
+    console.log(updateAmount, "updateAmount")
+
+    console.log(customerId, "customerId")
 
     await CustomerModel.findByIdAndUpdate(customerId, { $inc: { credit_balance: updateAmount } });
+}
+
+async function updateCashBalance(subtotal, invoiceNumber, customerDetails, employeeDetails, employeeId) {
+
+
+    let dataToSend = {
+
+        amount: subtotal,
+        invoiceNumber: invoiceNumber,
+        status: "sale",
+        employeeId: employeeId,
+        employeeDetails: employeeDetails,
+        customerDetails: customerDetails
+
+    }
+
+    console.log(dataToSend, "datatOsEND")
+
+
+
+    await cashModel.create(dataToSend);
 }
 
 function generateUniqueBarcodeNumber() {
@@ -73,7 +95,6 @@ const InvoiceController = {
         try {
             const invoiceData = req.body;
 
-            // Validate input data
             const requiredFields = ['customerDetails', 'productDetails', 'total', 'subtotal', 'employeeDetails', 'status', 'paymentMethod', 'customerName', 'totalItems'];
             for (const field of requiredFields) {
                 if (!invoiceData[field]) {
@@ -84,11 +105,21 @@ const InvoiceController = {
             // Get the total number of invoices to generate the next invoice number
             const totalInvoice = await InvoiceModel.countDocuments({});
             invoiceData.invoiceNumber = totalInvoice + 1;
+            const barcodeNumber = await generateUniqueBarcodeNumber();
+            const barcodeImagePath = path.join(__dirname, '../products/', `${invoiceData.invoiceNumber}_barcode.png`);
+
 
             // Map product details to update product quantities
             const productsToUpdate = invoiceData.productDetails.map(product => ({
+
                 productId: product._id,
-                quantity: product.saleQty
+                quantity: product.saleQty,
+                cost_price: product?.cost_price,
+                trade_price: product?.trade_price,
+                warehouse_price: product?.warehouse_price,
+                retail_price: product?.retail_price,
+                discount_price: product?.discountPrice
+
             }));
 
             // Update product quantities
@@ -96,14 +127,36 @@ const InvoiceController = {
                 await ProductModel.findByIdAndUpdate(product.productId, {
                     $inc: { qty: -product.quantity } // Decrement the quantity by the sold quantity
                 });
+
+
+                const ledgerEntry = {
+                    date: new Date(),
+                    qty: -product.quantity,
+                    cost_price: product?.cost_price,
+                    trade_price: product?.trade_price,
+                    discount_price: product?.discount_price ? product?.discount_price : 0,
+                    warehouse_price: product?.warehouse_price,
+                    retail_price: product?.retail_price,
+                    invoiceDetails: {
+                        customerDetails: invoiceData?.customerDetails,
+                        invoiceNumber: invoiceData?.invoiceNumber,
+                        status: invoiceData?.status,
+                        barcodeNumber: barcodeNumber,
+                        paymentMethod: invoiceData?.paymentMethod
+                    },
+                    employeeDetails: invoiceData?.employeeDetails,
+                    employeeId: invoiceData?.employeeId,
+                    status: "sale"
+                };
+
+                await ProductModel.findByIdAndUpdate(product.productId, {
+                    $push: { productLedger: ledgerEntry }
+                });
+
+
             }));
 
-            // Generate barcode image
-            const barcodeNumber = await generateUniqueBarcodeNumber();
 
-
-            const barcodeImagePath = path.join(__dirname, '../products/', `${invoiceData.invoiceNumber}_barcode.png`);
-            console.log(barcodeImagePath,"barcodeImage")
 
             await generateBarcode(barcodeNumber, barcodeImagePath);
 
@@ -118,6 +171,13 @@ const InvoiceController = {
             if (createdInvoice.paymentMethod.toLowerCase() === "cheque" || createdInvoice.paymentMethod.toLowerCase() === "credit") {
                 await updateCustomerCreditBalance(invoiceData.customerDetails?.id, createdInvoice.subtotal, invoiceData.deductAmount);
             }
+
+            if (createdInvoice.paymentMethod.toLowerCase() === "cash") {
+
+                await updateCashBalance(createdInvoice?.subtotal, invoiceData?.invoiceNumber, invoiceData?.customerDetails, invoiceData?.employeeDetails, invoiceData?.employeeId)
+
+            }
+
 
             return res.json({ message: "Transaction successful", status: true, data: createdInvoice });
         } catch (error) {
@@ -208,7 +268,6 @@ const InvoiceController = {
         }
 
     },
-
     getAll: async (req, res) => {
 
 

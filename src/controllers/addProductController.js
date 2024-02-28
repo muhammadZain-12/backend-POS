@@ -14,8 +14,6 @@ const AddProductController = {
             image1,
             image2,
             image3,
-            Supplier_code,
-            Supplier_Series,
             department,
             category,
             Sub_Category,
@@ -27,19 +25,11 @@ const AddProductController = {
             warehouse_price,
             trade_price,
             retail_price,
-            cost_price_w_vat,
-            trade_price_w_vat,
-            warehouse_price_w_vat,
-            retail_price_w_vat,
-            transportation_price,
-            transportation_price_w_vat,
-            other_expense,
-            other_expense_w_vat,
-            minimumSale,
-            minimumStock,
-            warranty,
-            warranty_duration,
             IMEI,
+            supplier_name,
+            supplier_id,
+            supplier_address,
+            supplier_mobile_number,
             barCode,
             status
         } = req.body
@@ -55,6 +45,21 @@ const AddProductController = {
             return
         }
 
+        const ledgerEntry = {
+            date: new Date(),
+            qty: qty,
+            status: "purchase",
+            cost_price : cost_price,
+            retail_price : retail_price,
+            warehouse_price : warehouse_price,
+            trade_price : trade_price,
+            supplierDetails: {
+                supplier_name: supplier_name,
+                supplier_address: supplier_address,
+                supplier_mobile_number: supplier_mobile_number,
+                supplier_id: supplier_id
+            },
+        };
 
         let dataToSend = {
 
@@ -64,34 +69,25 @@ const AddProductController = {
             image1_url: image1,
             image2_url: image2,
             image3_url: image3,
-            supplier_code: Supplier_code,
-            supplier_series: Supplier_Series,
             department: department,
             category: category,
             sub_category: Sub_Category,
             make: make,
             model: model,
             qty: qty,
+            supplier_name: supplier_name,
+            supplier_address: supplier_address,
+            supplier_mobile_number: supplier_mobile_number,
+            supplier_id: supplier_id,
             reminder_qty: remind,
             cost_price: cost_price,
             trade_price: trade_price,
             warehouse_price: warehouse_price,
             retail_price: retail_price,
-            cost_price_w_vat: cost_price_w_vat,
-            trade_price_w_vat: trade_price_w_vat,
-            warehouse_price_w_vat: warehouse_price_w_vat,
-            retail_price_w_vat: retail_price_w_vat,
-            transportation_price: transportation_price,
-            transportation_price_w_vat: transportation_price_w_vat,
-            other_expense: other_expense,
-            other_expense_w_vat: other_expense_w_vat,
-            warranty: warranty,
             IMEI: IMEI,
-            warranty_duration: warranty_duration,
-            minimum_sale: minimumSale,
-            minimum_stock: minimumStock,
             barcode: barCode,
-            status: status
+            status: status,
+            productLedger: ledgerEntry
         }
 
         try {
@@ -99,6 +95,7 @@ const AddProductController = {
             const existingProduct = await productModel.findOne({ barcode: barCode });
 
             if (existingProduct) {
+                // existingProduct?.productLedger?.push(ledgerEntry);
                 return res.json({ status: false, message: 'The Product has already been added' });
             }
         }
@@ -135,6 +132,70 @@ const AddProductController = {
 
     },
 
+    put: async (req, res) => {
+
+        let data = req.body
+
+        let { qty, trade_price, cost_price, warehouse_price, retail_price, barcode, supplier_name, supplier_address, supplier_mobile_number, supplier_id } = data
+
+        if (!cost_price || !warehouse_price || !retail_price || !trade_price) {
+
+            res.json({
+                message: "Required Fields are missing",
+                status: false
+            })
+            return
+        }
+
+
+
+        const ledgerEntry = {
+            date: new Date(),
+            qty: qty,
+            status: "purchase",
+            cost_price: cost_price,
+            retail_price: retail_price,
+            warehouse_price: warehouse_price,
+            trade_price: trade_price,
+            supplierDetails: {
+                supplier_name: supplier_name,
+                supplier_address: supplier_address,
+                supplier_mobile_number: supplier_mobile_number,
+                supplier_id: supplier_id
+            },
+        };
+
+        try {
+            // Check if the email already exists in the database
+            const existingProduct = await productModel.findOne({ barcode: barcode });
+
+            if (existingProduct) {
+                await productModel.findByIdAndUpdate(existingProduct._id, {
+                    $push: { productLedger: ledgerEntry },
+                    $set: {
+                        cost_price: cost_price,
+                        retail_price: retail_price,
+                        warehouse_price: warehouse_price,
+                        trade_price: trade_price
+                    },
+                    $inc: { qty: qty }
+                });
+                return res.json({ status: true, message: 'The Product Has Successfully Updated' });
+            }
+        }
+        catch (error) {
+            console.error(error);
+            return res.status(500).json({ status: false, message: 'Internal server error.' });
+        }
+
+
+
+
+
+
+
+    },
+
     get: async (req, res) => {
 
 
@@ -157,6 +218,10 @@ const AddProductController = {
 
         }
     },
+
+
+
+
     delete: async (req, res) => {
         try {
             const productIds = req.body.map(product => product._id);

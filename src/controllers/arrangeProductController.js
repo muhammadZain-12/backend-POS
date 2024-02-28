@@ -1,9 +1,25 @@
+const cashModel = require("../models/cashSchema");
 const productModel = require("../models/productSchema")
 const supplierModel = require("./supplierSchema")
 
 
 
 
+
+async function updateCashBalance(subtotal, supplierDetails, employeeDetails, employeeId) {
+
+
+    let dataToSend = {
+
+        amount: subtotal,
+        status: "local purchase",
+        employeeId: employeeId,
+        employeeDetails: employeeDetails,
+        supplierDetails: supplierDetails
+    }
+
+    await cashModel.create(dataToSend);
+}
 
 
 const ArrangeProductController = {
@@ -12,7 +28,8 @@ const ArrangeProductController = {
 
         let data = req.body
 
-        let { productDetails, supplierDetails, paymentMethod } = data
+        let { productDetails, supplierDetails, paymentMethod, employeeDetails, employeeId } = data
+
 
         if (!productDetails || !supplierDetails || !paymentMethod) {
             res.json({
@@ -38,8 +55,9 @@ const ArrangeProductController = {
             status
         } = productDetails
 
-        let { supplierName, shopDetails, mobileNumber } = supplierDetails
+        let { supplierName, shopDetails, mobileNumber, _id } = supplierDetails
 
+        console.log(supplierDetails, "details")
 
 
         if (!supplierName || !shopDetails || !mobileNumber) {
@@ -77,46 +95,68 @@ const ArrangeProductController = {
 
             supplierModel.findOne({ _id: supplierDetails?._id }).then((supplier) => {
 
+
                 supplierModel.findByIdAndUpdate(supplier?._id, {
-                    $inc: { balance: (cost_price * qty) }
+                    $inc: { balance: (cost_price * qty) },
+
                 })
                     .then(async (supplier) => {
 
                         try {
                             // Check if the email already exists in the database
+
+
+                            const ledgerEntry = {
+                                date: new Date(),
+                                qty: qty,
+                                status: "local purchase",
+                                cost_price: cost_price,
+                                retail_price: retail_price,
+                                warehouse_price: warehouse_price,
+                                trade_price: trade_price,
+                                supplierDetails: {
+                                    supplier_name: supplierName,
+                                    supplier_address: shopDetails,
+                                    supplier_mobile_number: mobileNumber,
+                                    supplier_id: _id
+                                },
+                                employeeDetails: employeeDetails,
+                                employeeId: employeeId
+                            };
+
                             const existingProduct = await productModel.findOne({ barcode: barcode });
 
                             if (existingProduct) {
 
-                                console.log(existingProduct._id, cost_price, trade_price, warehouse_price, retail_price, "working");
+
 
 
                                 productModel.findByIdAndUpdate(existingProduct._id, {
                                     $inc: { qty: qty },
+                                    $push: { productLedger: ledgerEntry },
                                     $set: {
                                         cost_price: cost_price,
                                         trade_price: trade_price,
                                         warehouse_price: warehouse_price,
                                         retail_price: retail_price,
-                                        category : productDetails?.category,
-                                        sub_category : productDetails?.sub_category,
-                                        make : productDetails.make,
-                                        model : productDetails?.model,
-                                        product_name : productDetails?.product_name,
-                                        department : productDetails?.department,
+                                        category: productDetails?.category,
+                                        sub_category: productDetails?.sub_category,
+                                        make: productDetails.make,
+                                        supplier_name: supplierName,
+                                        supplier_address: shopDetails,
+                                        supplier_mobile_number: mobileNumber,
+                                        supplier_id: supplier?._id,
+                                        model: productDetails?.model,
+                                        product_name: productDetails?.product_name,
+                                        department: productDetails?.department,
                                     }
-
                                 }).then((updatedProduct) => {
 
 
                                     let data = {
-
                                         supplierDetails: supplier,
                                         productDetails: updatedProduct
-
                                     }
-
-
 
                                     res.json({
                                         message: "Transaction Successful",
@@ -138,6 +178,7 @@ const ArrangeProductController = {
 
 
                             }
+
                             else {
 
                                 let productToSend = {
@@ -145,11 +186,18 @@ const ArrangeProductController = {
                                     supplier_name: supplierName,
                                     supplier_address: shopDetails,
                                     supplier_mobile_number: mobileNumber,
-                                    supplier_id: supplier?._id
+                                    supplier_id: _id,
+                                    productLedger: ledgerEntry
                                 }
 
 
+
+
+
+
+
                                 productModel.create(productToSend).then((product) => {
+
 
                                     if (!product) {
 
@@ -175,6 +223,8 @@ const ArrangeProductController = {
                                     })
 
                                 }).catch((error) => {
+
+                                    console.log(error, "errorrr")
 
                                     res.json({
                                         message: error.message,
@@ -220,6 +270,32 @@ const ArrangeProductController = {
 
             try {
                 // Check if the email already exists in the database
+
+                let subtotal = cost_price * qty
+
+
+                await updateCashBalance(subtotal, supplierDetails, employeeDetails, employeeId)
+
+
+
+                const ledgerEntry = {
+                    date: new Date(),
+                    qty: qty,
+                    status: "local purchase",
+                    cost_price: cost_price,
+                    retail_price: retail_price,
+                    warehouse_price: warehouse_price,
+                    trade_price: trade_price,
+                    supplierDetails: {
+                        supplier_name: supplierName,
+                        supplier_address: shopDetails,
+                        supplier_mobile_number: mobileNumber,
+                        supplier_id: _id
+                    },
+                    employeeDetails: employeeDetails,
+                    employeeId: employeeId
+                };
+
                 const existingProduct = await productModel.findOne({ barcode: barcode });
 
                 if (existingProduct) {
@@ -229,18 +305,19 @@ const ArrangeProductController = {
 
                     productModel.findByIdAndUpdate(existingProduct._id, {
                         $inc: { qty: qty },
+                        $push: { productLedger: ledgerEntry },
                         $set: {
                             cost_price: cost_price,
                             trade_price: trade_price,
                             warehouse_price: warehouse_price,
                             retail_price: retail_price,
-                            category : productDetails?.category,
-                            sub_category : productDetails?.sub_category,
-                            make : productDetails.make,
-                            model : productDetails?.model,
-                            product_name : productDetails?.product_name,
-                            department : productDetails?.department,
-                        
+                            category: productDetails?.category,
+                            sub_category: productDetails?.sub_category,
+                            make: productDetails.make,
+                            model: productDetails?.model,
+                            product_name: productDetails?.product_name,
+                            department: productDetails?.department,
+
                         }
                     }).then((updatedProduct) => {
 
@@ -280,7 +357,8 @@ const ArrangeProductController = {
                         supplier_name: supplierName,
                         supplier_address: shopDetails,
                         supplier_mobile_number: mobileNumber,
-                        supplier_id: supplierDetails?._id
+                        supplier_id: supplierDetails?._id,
+                        productLedger: ledgerEntry
                     }
 
                     productModel.create(productToSend).then((product) => {
@@ -300,8 +378,6 @@ const ArrangeProductController = {
                             productDetails: product
 
                         }
-
-                        console.log(data, "dataaaaaaa")
 
                         res.json({
                             message: "Transaction Successful",
