@@ -22,6 +22,9 @@ const DepartmentController = require("../controllers/departmentController")
 const DamageProductController = require("../controllers/damageProductController")
 const exchangeController = require("../controllers/exchangeController")
 const CashController = require("../controllers/cashController")
+const EmployeeController = require("../controllers/EmployeeController")
+const PurchaseOrderController = require("../controllers/purchaseOrderController")
+const makeController = require("../models/makeController")
 
 
 require("dotenv").config()
@@ -74,7 +77,7 @@ const checkRole = (req, res, next) => {
 
     let data = req.user
 
-    if (data.role == "employee" || data.role == "admin") {
+    if (data.role == "Manager" || data.role == "admin") {
 
         next()
 
@@ -115,6 +118,7 @@ router.put("/api/updateCustomer", authenticateMiddleware, checkRole, CustomerCon
 router.delete("/api/deleteCustomer/:id", authenticateMiddleware, checkRole, CustomerController.delete)
 router.post("/api/sendEmailToCustomer", authenticateMiddleware, EmailController.post)
 router.post("/api/createInvoice", authenticateMiddleware, InvoiceController.post)
+router.post("/api/pdfSendToCustomer", authenticateMiddleware, EmailController.sendPdf)
 
 
 router.get("/api/getInvoices/:id", authenticateMiddleware, InvoiceController.get)
@@ -169,6 +173,9 @@ router.post("/api/addProductDepartment", authenticateMiddleware, checkRole, Depa
 router.get("/api/getProductDepartment", authenticateMiddleware, checkRole, DepartmentController.getDepartment)
 router.post("/api/addProductCategory", authenticateMiddleware, checkRole, DepartmentController.addCategory)
 router.post("/api/addProductSubcategory", authenticateMiddleware, checkRole, DepartmentController.addSubcategory)
+router.post("/api/addProductMake", authenticateMiddleware, checkRole, makeController.addMake)
+router.get("/api/getProductMake", authenticateMiddleware, checkRole, makeController.getMake)
+router.post("/api/addProductModel", authenticateMiddleware, checkRole, makeController.addModel)
 
 
 router.post("/api/createExchangeInvoice", authenticateMiddleware, exchangeController.post)
@@ -180,6 +187,30 @@ router.get("/api/getAllExchangeInvoices", authenticateMiddleware, exchangeContro
 
 router.get("/api/getCashBalance", authenticateMiddleware, CashController.getAll)
 router.get("/api/getDayCashBalance", authenticateMiddleware, CashController.getDay)
+
+
+
+router.get("/api/getAllEmployees", authenticateMiddleware, checkRole, EmployeeController.get)
+router.delete("/api/deleteEmployee/:id", authenticateMiddleware, checkRole, EmployeeController.delete)
+router.put("/api/changeEmployeeStatus", authenticateMiddleware, checkRole, EmployeeController.changeStatus)
+router.put("/api/changeEmployeeShowPriceStatus", authenticateMiddleware, checkRole, EmployeeController.changePriceShowStatus)
+router.put("/api/changeEmployeeRole", authenticateMiddleware, checkRole, EmployeeController.changeRole)
+
+
+router.get("/api/getAllPurchaseOrders", authenticateMiddleware, checkRole, PurchaseOrderController.get)
+router.post("/api/createPurchaseOrder", authenticateMiddleware, checkRole, PurchaseOrderController.post)
+router.put("/api/updateArriveQtyInPurchaseOrder", authenticateMiddleware, checkRole, PurchaseOrderController.updateQtyArrived)
+router.put("/api/updateLeftQtyInPurchaseOrder", authenticateMiddleware, checkRole, PurchaseOrderController.updateQtyLeft)
+router.put("/api/editPO", authenticateMiddleware, checkRole, PurchaseOrderController.editPO)
+
+
+
+router.delete("/api/deleteSupplier/:id", authenticateMiddleware, checkRole, SupplierController.delete)
+router.put("/api/editSupplier", authenticateMiddleware, checkRole, SupplierController.put)
+router.put("/api/payToSupplier", authenticateMiddleware, checkRole, SupplierController.payAmount)
+
+
+
 
 
 

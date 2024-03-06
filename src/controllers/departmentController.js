@@ -102,7 +102,7 @@ const DepartmentController = {
         }
 
 
-        console.log(categoryPer,"percentafe")
+        console.log(categoryPer, "percentafe")
 
         try {
             // Find the department by name
@@ -117,7 +117,8 @@ const DepartmentController = {
             }
 
             // Add the category to the department
-            department.categories.push({ categoryName,
+            department.categories.push({
+                categoryName,
                 categoryPer: {
                     a: Number(categoryPer.a),
                     b: Number(categoryPer.b),
@@ -125,8 +126,8 @@ const DepartmentController = {
                 }
             });
 
-            console.log(department,"department")
-            
+            console.log(department, "department")
+
             // Save the updated department
             const updatedDepartment = await department.save();
 

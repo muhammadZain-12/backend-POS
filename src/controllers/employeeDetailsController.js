@@ -13,7 +13,8 @@ let EmployeeDetailsController = {
             status: true
         })
 
-    }
+    },
+
 }
 
 module.exports = EmployeeDetailsController

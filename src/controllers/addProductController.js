@@ -1,4 +1,51 @@
+const BwipJs = require("bwip-js");
 const productModel = require("../models/productSchema")
+const fs = require('fs');
+const path = require("path");
+const supplierModel = require("./supplierSchema");
+
+
+
+
+function generateBarcode(barcodeNumber, imagePath) {
+    return new Promise((resolve, reject) => {
+        BwipJs.toBuffer({
+            bcid: 'code128', // Barcode type
+            text: barcodeNumber.toString(), // Text to encode in the barcode
+            scale: 3, // Scaling factor
+            height: 10, // Barcode height (adjust as needed)
+            includetext: false, // Include human-readable text below the barcode
+            textxalign: 'center' // Text alignment
+        }, (err, png) => {
+            if (err) {
+                console.error(err);
+                reject(new Error("Error generating barcode"));
+            } else {
+
+                fs.writeFile(imagePath, png, function (err) {
+                    if (err) {
+                        console.error(err);
+                        reject()
+                    } else {
+                        resolve()
+                        console.log('Barcode image generated successfully.');
+                    }
+                });
+
+                // fs.writeFile(imagePath, png)
+                //     .then(() => {
+                //         console.log("Barcode image saved successfully");
+                //         resolve();
+                //     })
+                //     .catch(error => {
+                //         console.error(error);
+                //         reject(new Error("Error saving barcode image"));
+                //     });
+            }
+        });
+    });
+}
+
 
 
 const AddProductController = {
@@ -49,10 +96,10 @@ const AddProductController = {
             date: new Date(),
             qty: qty,
             status: "purchase",
-            cost_price : cost_price,
-            retail_price : retail_price,
-            warehouse_price : warehouse_price,
-            trade_price : trade_price,
+            cost_price: cost_price,
+            retail_price: retail_price,
+            warehouse_price: warehouse_price,
+            trade_price: trade_price,
             supplierDetails: {
                 supplier_name: supplier_name,
                 supplier_address: supplier_address,
@@ -102,6 +149,65 @@ const AddProductController = {
         catch (error) {
             console.error(error);
             return res.status(500).json({ status: false, message: 'Internal server error.' });
+        }
+
+        const barcodeImagePath = path.join(__dirname, '../products/', `${dataToSend.barcode}_barcode.png`);
+
+        await generateBarcode(dataToSend?.barcode, barcodeImagePath);
+
+        dataToSend.barcodeImage = `${dataToSend.barcode}_barcode.png`;
+
+
+        // let supplier_ledger = {
+
+        //     ProductName: dataToSend?.product_name,
+        //     qty: dataToSend?.qty,
+        //     cost_price: dataToSend?.cost_price,
+        //     retail_price: dataToSend?.retail_price,
+        //     warehouse_price: dataToSend?.warehouse_price,
+        //     trade_price: dataToSend?.trade_price,
+        //     totalAmount: Number(dataToSend?.cost_price) * Number(dataToSend?.qty),
+        //     paymentMethod: "credit",
+        //     status: "purchase goods from supplier",
+
+        // }
+
+        let supplier;
+        try {
+            supplier = await supplierModel.findById(supplier_id);
+            if (!supplier) {
+                return res.json({ status: false, message: 'Supplier not found.' });
+            }
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ status: false, message: 'Error finding supplier.' });
+        }
+
+        // Push entry to supplier ledger
+        let supplier_ledger = {
+            productName: dataToSend.product_name,
+            barcode : dataToSend?.barcode,
+            qty: dataToSend.qty,
+            cost_price: dataToSend.cost_price,
+            retail_price: dataToSend.retail_price,
+            warehouse_price: dataToSend.warehouse_price,
+            trade_price: dataToSend.trade_price,
+            totalAmount: Number(dataToSend.cost_price) * Number(dataToSend.qty),
+            paymentMethod: "credit",
+            status: "purchase goods from supplier",
+        };
+
+        supplier.supplier_ledger.push(supplier_ledger);
+        if(supplier.balance){
+        supplier.balance += (Number(dataToSend?.qty) * Number(dataToSend?.cost_price))
+    }else{
+        supplier.balance = Number(supplier_ledger?.totalAmount)
+    }
+        try {
+            await supplier.save();
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ status: false, message: 'Error saving supplier ledger.' });
         }
 
         productModel

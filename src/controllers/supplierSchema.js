@@ -22,6 +22,48 @@ const supplierSchema = mongoose.Schema({
     balance: {
         type: Number
     },
+    supplier_ledger : [
+        {
+        date : {
+            type : Date,
+            default : Date.now
+        },
+        productName : {
+            type : String
+        },
+        barcode : {
+            type : mongoose.Schema.Types.Mixed
+        },
+        qty : {
+            type : Number
+        },
+        totalAmount : {
+            type : Number
+        },
+        paymentMethod : {
+            type : String
+        },
+        status : {
+            type : String,
+        },
+        cost_price : {
+            type : Number
+        },
+        retail_price : {
+            type : Number
+        },
+        warehouse_price : {
+            type : Number
+        },
+        trade_price : {
+            type : Number
+        },
+        payAmount : {
+            type : Number
+        },
+    }
+
+    ],
     created_at: {
         type: Date,
         default: Date.now, // Set the default value to the current timestamp when a document is created

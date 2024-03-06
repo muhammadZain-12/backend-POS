@@ -30,11 +30,16 @@ const userSchema = mongoose.Schema({
     },
     role: {
         type: String,
-        default: "employee"
+        default: "Sales Assistant"
     },
     show_price: {
         type: Boolean,
         default: false
+    },
+    status: {
+        type: String,
+        default: "active"
+
     }
 
 })

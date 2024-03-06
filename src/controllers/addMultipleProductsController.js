@@ -1,5 +1,52 @@
 const productModel = require("../models/productSchema")
+const fs = require('fs');
+const path = require("path")
+const BwipJs = require("bwip-js");
+const supplierModel = require("./supplierSchema");
 
+
+
+
+
+function generateBarcode(barcodeNumber, imagePath) {
+    return new Promise((resolve, reject) => {
+        BwipJs.toBuffer({
+            bcid: 'code128', // Barcode type
+            text: barcodeNumber.toString(), // Text to encode in the barcode
+            scale: 3, // Scaling factor
+            height: 10, // Barcode height (adjust as needed)
+            includetext: false,
+            // Include human-readable text below the barcode
+            textxalign: 'center' // Text alignment
+        }, (err, png) => {
+            if (err) {
+                console.error(err);
+                reject(new Error("Error generating barcode"));
+            } else {
+
+                fs.writeFile(imagePath, png, function (err) {
+                    if (err) {
+                        console.error(err);
+                        reject()
+                    } else {
+                        resolve()
+                        console.log('Barcode image generated successfully.');
+                    }
+                });
+
+                // fs.writeFile(imagePath, png)
+                //     .then(() => {
+                //         console.log("Barcode image saved successfully");
+                //         resolve();
+                //     })
+                //     .catch(error => {
+                //         console.error(error);
+                //         reject(new Error("Error saving barcode image"));
+                //     });
+            }
+        });
+    });
+}
 
 
 const AddMultipleProductsController = {
@@ -33,8 +80,6 @@ const AddMultipleProductsController = {
         }
 
         let updateData = data && data.length > 0 && data.map((e, i) => {
-
-            console.log(e,"eeee")
 
 
             const ledgerEntry = {
@@ -88,13 +133,69 @@ const AddMultipleProductsController = {
             // Check for existing products based on barcode
             const existingProducts = await productModel.find({ barcode: { $in: updateData.map(product => product?.barcode) } });
 
-            const newProducts = updateData.filter(product => {
+            let newProducts = updateData.filter(product => {
                 // Check if the product ID is not present in the existingProducts array
                 return !existingProducts.some(existingProduct => existingProduct.barcode === product.barcode);
             });
 
             if (newProducts && newProducts?.length > 0) {
-                const result = await productModel.insertMany(newProducts);
+
+
+                const productsWithBarcodeImages = await Promise.all(newProducts.map(async e => {
+
+
+                    const barcodeImagePath = path.join(__dirname, '../products/', `${e.barcode}_barcode.png`);
+                    await generateBarcode(e?.barcode, barcodeImagePath);
+                    const barcodeImage = `${e.barcode}_barcode.png`;
+
+                    let supplier;
+                    try {
+                        supplier = await supplierModel.findOne({supplierName : e?.supplier_name});
+                        if (!supplier) {
+                            return res.json({ status: false, message: 'Supplier not found.' });
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        return res.status(500).json({ status: false, message: 'Error finding supplier.' });
+                    }
+
+                    // Push entry to supplier ledger
+                    let supplier_ledger = {
+                        productName: e.ProductName,
+                        barcode : e?.barcode,
+                        qty: e.qty,
+                        cost_price: e.cost_price,
+                        retail_price: e.retail_price,
+                        warehouse_price: e.warehouse_price,
+                        trade_price: e.trade_price,
+                        totalAmount: Number(e.cost_price) * Number(e.qty),
+                        paymentMethod: "credit",
+                        status: "purchase goods from supplier",
+                    };
+
+                    supplier.supplier_ledger.push(supplier_ledger);
+                    if (supplier.balance) {
+                        supplier.balance += (Number(e?.qty) * Number(e?.cost_price))
+
+                    }
+                    else {
+                        supplier.balance = Number(supplier_ledger?.totalAmount)
+                    }
+                    try {
+                        await supplier.save();
+                    } catch (error) {
+                        console.error(error);
+                        return res.status(500).json({ status: false, message: 'Error saving supplier ledger.' });
+                    }
+
+                    return {
+                        ...e,
+                        barcodeImage: barcodeImage
+                    };
+                }));
+
+
+                const result = await productModel.insertMany(productsWithBarcodeImages);
                 res.json({
                     message: "Product added successfully",
                     status: true,

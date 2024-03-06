@@ -75,7 +75,7 @@ const productSchema = mongoose.Schema({
         required: true,
 
     },
-    
+
     warehouse_price: {
         type: Number,
         required: true,
@@ -107,67 +107,70 @@ const productSchema = mongoose.Schema({
         default: Date.now, // Set the default value to the current timestamp when a document is created
     },
     barcode: {
-        type: Number,
+        type: mongoose.Schema.Types.Mixed,
         unique: true,
         required: true
+    },
+    barcodeImage: {
+        type: String
     },
     productLedger: [
         {
             date: { type: Date, default: Date.now },
             qty: { type: Number },
-            status : {
-                type : String
+            status: {
+                type: String
             },
-            cost_price : {
-                type  : Number
+            cost_price: {
+                type: Number
             },
-            retail_price : {
-                type  : Number
+            retail_price: {
+                type: Number
             },
-            warehouse_price : {
-                type  : Number
+            warehouse_price: {
+                type: Number
             },
-            trade_price : {
-                type  : Number
+            trade_price: {
+                type: Number
             },
             discount_price: {
                 type: Number,
             },
             supplierDetails: {
                 supplier_name: { type: String },
+                paymentMethod: { type: String },
                 supplier_address: { type: String },
                 supplier_mobile_number: { type: String },
-                supplier_id : {
-                    type : String
+                supplier_id: {
+                    type: String
                 }
             },
-            employeeId : {
-                type : String
+            employeeId: {
+                type: String
             },
-            employeeDetails : {
-                type : [mongoose.Schema.Types.Mixed],
+            employeeDetails: {
+                type: [mongoose.Schema.Types.Mixed],
             },
             invoiceDetails: {
-          
-                customerDetails : {
-                    type : [mongoose.Schema.Types.Mixed],
-                    required : true
-                },
-                invoiceNumber : {
-                    type : String
-                },
-                
-                status : {
-                    type : String
-                },
-                paymentMethod : {
-                    type : String
-                },
-                barcodeNumber : {
-                    type : Number
-                }
 
-          
+                customerDetails: {
+                    type: [mongoose.Schema.Types.Mixed],
+                    required: true
+                },
+                invoiceNumber: {
+                    type: String
+                },
+
+                status: {
+                    type: String
+                },
+                paymentMethod: {
+                    type: String
+                },
+                barcodeNumber: {
+                    type: Number
+                },
+
             }
         }
     ]

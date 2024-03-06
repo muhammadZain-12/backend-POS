@@ -46,13 +46,21 @@ let LoginController = {
               status: false
 
             }
-
             )
             return
           }
           else {
             if (result) {
               // Allow access to the user
+
+              if(findUser?.status == "block"){
+                res.json({
+                  message : "Your Id has been blocked by admin",
+                  status : true,
+                  block : true
+                })
+                return
+              }
 
               let time = Date.now()
 
@@ -65,8 +73,9 @@ let LoginController = {
                 password: findUser?.password,
                 confirmPassword: findUser.confirm_password,
                 role: findUser?.role,
-                show_price:findUser?.show_price,
+                show_price: findUser?.show_price,
                 time: time,
+                status: findUser?.status
 
               }
 
@@ -78,8 +87,9 @@ let LoginController = {
                 emailAddress: findUser?.email_address,
                 fullName: findUser?.full_name,
                 time: Date.now(),
-                role : findUser?.role,
-                show_price : findUser?.show_price
+                role: findUser?.role,
+                show_price: findUser?.show_price,
+                status: findUser?.status
               }
 
               data.token = token
