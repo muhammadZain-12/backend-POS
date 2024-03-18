@@ -71,13 +71,18 @@ async function updateCashBalance(subtotal, invoiceNumber, customerDetails, emplo
 
 
 
-async function updateCustomerCreditBalance(customerId, subtotal, deductAmount) {
+async function updateCustomerCreditBalance(customerId, subtotal, deductAmount, invoiceData) {
 
 
 
     const updateAmount = deductAmount ? deductAmount : subtotal;
 
-    await CustomerModel.findByIdAndUpdate(customerId, { $inc: { credit_balance: updateAmount } });
+    if (invoiceData?.vatAmount) {
+
+        await CustomerModel.findByIdAndUpdate(customerId, { $inc: { credit_balance: updateAmount } });
+    } else {
+        await CustomerModel.findByIdAndUpdate(customerId, { $inc: { quotation_balance: updateAmount } });
+    }
 }
 
 function generateUniqueBarcodeNumber() {
@@ -108,18 +113,18 @@ const exchangeController = {
             // Get the total number of invoices to generate the next invoice number
             const totalInvoice = await ExchangeInvoiceModel.countDocuments({});
             invoiceData.invoiceNumber = `exhInv${totalInvoice + 1}`;
-                        // Generate barcode image
-                        const barcodeNumber = await generateUniqueBarcodeNumber();
+            // Generate barcode image
+            const barcodeNumber = await generateUniqueBarcodeNumber();
 
-                        const barcodeImagePath = path.join(__dirname, '../products/', `${invoiceData.invoiceNumber}_exh_barcode.png`);
-            
-                        await generateBarcode(barcodeNumber, barcodeImagePath);
-            
-                        // Associate the barcode image path with the invoice data
-                        invoiceData.barcodeNumber = barcodeNumber
-                        invoiceData.barcodeImagePath = `${invoiceData.invoiceNumber}_exh_barcode.png`;
-            
-            
+            const barcodeImagePath = path.join(__dirname, '../products/', `${invoiceData.invoiceNumber}_exh_barcode.png`);
+
+            await generateBarcode(barcodeNumber, barcodeImagePath);
+
+            // Associate the barcode image path with the invoice data
+            invoiceData.barcodeNumber = barcodeNumber
+            invoiceData.barcodeImagePath = `${invoiceData.invoiceNumber}_exh_barcode.png`;
+
+
 
 
             // Map product details to update product quantities
@@ -132,10 +137,9 @@ const exchangeController = {
                 supplier_id: product?.supplier_id,
                 cost_price: product?.cost_price,
                 trade_price: product?.trade_price,
-                discount_price : product?.discountPrice,
+                discount_price: product?.discountPrice,
                 warehouse_price: product?.warehouse_price,
                 retail_price: product?.retail_price,
-
 
             }));
 
@@ -158,7 +162,7 @@ const exchangeController = {
                     },
                     cost_price: product?.cost_price,
                     trade_price: product?.trade_price,
-                    discount_price:product?.discount_price ?? 0,
+                    discount_price: product?.discount_price ?? 0,
                     warehouse_price: product?.warehouse_price,
                     retail_price: product?.retail_price,
                     supplierDetails: {
@@ -198,7 +202,7 @@ const exchangeController = {
                     },
                     cost_price: product?.cost_price,
                     trade_price: product?.trade_price,
-                    discount_price:product?.discount_price ?? 0,
+                    discount_price: product?.discount_price ?? 0,
                     warehouse_price: product?.warehouse_price,
                     retail_price: product?.retail_price,
                     supplierDetails: {
@@ -272,22 +276,11 @@ const exchangeController = {
             await Promise.all(updatePromises);
 
 
-
-            // await Promise.all(productToAdd.map(async product => {
-
-
-
-            //     await ProductModel.findByIdAndUpdate(product.productId, {
-            //         $inc: { qty: product.quantity } // Decrement the quantity by the sold quantity
-            //     });
-            // }));
-
-            // Create invoice
             const createdInvoice = await ExchangeInvoiceModel.create(invoiceData);
 
             // Update customer credit balance if payment method is cheque or credit
             if (createdInvoice.paymentMethod.toLowerCase() === "cheque" || createdInvoice.paymentMethod.toLowerCase() === "credit") {
-                await updateCustomerCreditBalance(invoiceData.customerDetails?.id, createdInvoice.subtotal, invoiceData.deductAmount);
+                await updateCustomerCreditBalance(invoiceData.customerDetails?.id, createdInvoice.subtotal, invoiceData.deductAmount, invoiceData);
             }
 
             if (createdInvoice.paymentMethod.toLowerCase() === "cash" || createdInvoice.paymentMethod.toLowerCase() === "refund cash") {
@@ -303,7 +296,7 @@ const exchangeController = {
                     if (customer) {
 
                         if (lessAmount) {
-                            let cashDeduct = Number(Math.abs(subtotal)) - Number(customer?.credit_balance)
+                            let cashDeduct = Number(Math.abs(subtotal)) - Number(invoiceData?.returnVat ? Number(customer?.credit_balance) : Number(customer?.quotation_balance))
 
                             cashDeduct = cashDeduct * -1
 
@@ -317,8 +310,13 @@ const exchangeController = {
                             await updateCashBalance(cashDeduct, invoiceData?.invoiceNumber, invoiceData?.customerDetails, invoiceData?.employeeDetails, invoiceData?.employeeId)
                         }
 
-                        let deductedBalance = lessAmount ? Number(customer?.credit_balance) : deductAmount ? Number(deductAmount) : Number(subtotal)
-                        customer.credit_balance -= deductedBalance; // Assuming the total amount is deducted from the credit balance
+                        let deductedBalance = lessAmount ? (invoiceData?.returnVat ? Number(customer?.credit_balance) : Number(customer?.quotation_balance)) : deductAmount ? Number(deductAmount) : Number(subtotal)
+
+                        if (invoiceData?.returnVat) {
+                            customer.credit_balance -= deductedBalance; // Assuming the total amount is deducted from the credit balance
+                        } else {
+                            customer.quotation_balance -= deductedBalance;
+                        }
                         await customer.save();
                     }
                 } catch (error) {
@@ -326,6 +324,131 @@ const exchangeController = {
                     // Handle error as needed
                 }
             }
+
+
+            const customer = await CustomerModel.findOne({ _id: customerDetails.id });
+
+
+            // let customerSaleLedger = {
+
+            //     date: invoiceData?.exchangeDate,
+            //     employeeDetails: invoiceData?.employeeDetails,
+            //     employeeName: invoiceData?.employeeDetails?.employeeName,
+            //     status: invoiceData?.status,
+            //     productDetails: invoiceData?.productDetails,
+            //     vatAmount: invoiceData?.vatAmount,
+            //     totalItems: invoiceData?.totalItems,
+            //     totalQty: invoiceData?.totalQty,
+            //     transactionType : invoiceData?.vatAmount ? "Invoice" : "Quotation",
+            //     invoiceAmount: invoiceData?.subtotal,
+            //     invoiceType: "Sale Invoice",
+            //     paymentMethod: invoiceData?.paymentMethod,
+            //     paid: (invoiceData?.paymentMethod.toLowerCase() == "credit" || invoiceData?.paymentMethod.toLowerCase() == "cheque") ? 0 : invoiceData?.subtotal,
+            //     toPay: (invoiceData?.paymentMethod.toLowerCase() == "credit" || invoiceData?.paymentMethod.toLowerCase() == "cheque") ? invoiceData?.subtotal : 0,
+            //     invoiceNumber: invoiceData?.invoiceNumber,
+            //     invoiceBarcodeNumber: barcodeNumber,
+            //     referenceId: invoiceData?.referenceId,
+            //     transactionId: invoiceData?.transactionId,
+            //     cheque_no: invoiceData?.cheque_no,
+            //     bank_name: invoiceData?.bank_name,
+            //     clear_date: invoiceData?.clear_date,
+            //     creditDays: invoiceData?.creditDays,
+            // }
+
+
+
+            let customerLedger = {
+
+                date: invoiceData?.exchangeDate,
+                employeeDetails: invoiceData?.employeeDetails,
+                employeeName: invoiceData?.employeeDetails?.employeeName,
+                status: invoiceData?.status,
+                productDetails: invoiceData?.productDetails,
+                returnProductDetails: invoiceData?.returnProductDetails,
+                vatAmount: invoiceData?.vatAmount,
+                totalItems: invoiceData?.totalItems,
+                totalQty: invoiceData?.totalQty,
+                transactionType: invoiceData?.vatAmount ? "Exchange Invoice" : "Exchange Quotation",
+                invoiceAmount: invoiceData?.subtotal,
+                invoiceType: "Exchange Invoice",
+                paymentMethod: invoiceData?.paymentMethod,
+                paid: (invoiceData?.paymentMethod.toLowerCase() == "cash" || invoiceData?.paymentMethod.toLowerCase() == "card" || invoiceData?.paymentMethod.toLowerCase() == "online") ? invoiceData?.subtotal : 0,
+                toPay: (invoiceData?.paymentMethod.toLowerCase() == "credit" || invoiceData?.paymentMethod.toLowerCase() == "cheque") ? invoiceData?.subtotal : 0,
+                paidBackCash: (!deductCreditBalance && invoiceData?.paymentMethod?.toLowerCase() == "refund cash") ? Math.abs(Number(invoiceData?.subtotal)) : lessAmount ? (Number(Math.abs(subtotal)) - Number(invoiceData?.returnVat ? customer?.credit_balance : customer?.quotation_balance)) : 0,
+                deductCredit: deductCreditBalance ? lessAmount ? (invoiceData?.returnVat ? Number(customer?.credit_balance) : Number(customer?.quotation_balance)) : deductAmount ? Number(deductAmount) : Math.abs(Number(subtotal)) : 0,
+                invoiceNumber: invoiceData?.invoiceNumber,
+                returnInvoiceRef: invoiceData?.returnInvoiceRef,
+                invoiceBarcodeNumber: barcodeNumber,
+                referenceId: invoiceData?.referenceId,
+                transactionId: invoiceData?.transactionId,
+                cheque_no: invoiceData?.cheque_no,
+                bank_name: invoiceData?.bank_name,
+                clear_date: invoiceData?.clear_date,
+                creditDays: invoiceData?.creditDays,
+            }
+
+            // let previousLedger = [...customer.customerLedger]
+
+            // let refInvoice = previousLedger && previousLedger?.length > 0 && previousLedger?.filter((e, i) => {
+            //     return e?.invoiceNumber == customerLedger?.returnInvoiceRef
+            // })
+            // let otherInvoice = previousLedger && previousLedger?.length > 0 && previousLedger?.filter((e, i) => {
+            //     return e?.invoiceNumber !== customerLedger?.returnInvoiceRef
+            // })
+
+            // refInvoice = refInvoice?.[0]
+            // if (refInvoice?.returnAmount) {
+            //     refInvoice.returnAmount += Number(invoiceData?.returnSubtotal)
+            // } else {
+            //     refInvoice.returnAmount = Number(invoiceData?.returnSubtotal)
+            // }
+
+            // if (refInvoice?.totalReturnInvoices) {
+
+            //     refInvoice.totalReturnInvoices += 1
+
+            // }
+            // else {
+            //     refInvoice.totalReturnInvoices = 1
+            // }
+
+            // if (deductCreditBalance && refInvoice?.toPay) {
+            //     refInvoice.toPay -= lessAmount ? (invoiceData?.returnVat ? Number(customer?.credit_balance) : Number(customer?.quotation_balance)) : deductAmount ? Number(deductAmount) : Math.abs(Number(subtotal))
+            // } else if (deductCreditBalance) {
+
+            //     if (refInvoice?.deductCredit) {
+
+            //         refInvoice.deductCredit += lessAmount ? (invoiceData?.returnVat ? Number(customer?.credit_balance) : Number(customer?.quotation_balance)) : deductAmount ? Number(deductAmount) : Math.abs(Number(subtotal))
+
+            //     } else {
+            //         refInvoice.deductCredit = lessAmount ? (invoiceData?.returnVat ? Number(customer?.credit_balance) : Number(customer?.quotation_balance)) : deductAmount ? Number(deductAmount) : Math.abs(Number(subtotal))
+            //     }
+
+            // }
+            // else {
+            //     if (refInvoice.paidBackCash) {
+            //         refInvoice.paidBackCash += Math.abs(Number(subtotal))
+            //     } else {
+            //         refInvoice.paidBackCash = Math.abs(Number(subtotal))
+            //     }
+            // }
+
+            // if (refInvoice?.exchangeSaleAmount) {
+            //     refInvoice.exchangeSaleAmount = invoiceData?.saleSubtotal
+            // } else {
+            //     refInvoice.exchangeSaleAmount += invoiceData?.saleSubtotal
+            // }
+
+
+
+            // let allInvoices = [...otherInvoice, refInvoice]
+
+            customer.customerLedger.push(customerLedger)
+
+            // customer.customerLedger = allInvoices
+
+            customer.save()
+
 
             return res.json({ message: "Transaction successful", status: true, data: createdInvoice });
 

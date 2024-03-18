@@ -5,16 +5,16 @@ function convertToObject(data) {
 
     let date;
 
-    if(data?.created_at){
-    date = data.created_at
+    if (data?.created_at) {
+        date = data.created_at
 
-    const day = date.getDate(); // 15
-    const month = date.getMonth() + 1; // Months are zero-based, so January is 0
-    const year = date.getFullYear(); // 2024
+        const day = date.getDate(); // 15
+        const month = date.getMonth() + 1; // Months are zero-based, so January is 0
+        const year = date.getFullYear(); // 2024
 
 
-    date = `${day}/${month}/${year}`
-}
+        date = `${day}/${month}/${year}`
+    }
     return {
         customerName: data.customer_name,
         businessName: data?.business_name,
@@ -26,7 +26,6 @@ function convertToObject(data) {
         email: data.email,
         postalCode: data.postal_code,
         telephoneNo: data.telephone_no,
-
         telephoneNo2: data.telephone_no2,
         comment: data.comment,
         mobileNumber: data.mobile_number,
@@ -38,6 +37,8 @@ function convertToObject(data) {
         priceLevel: data.price_level,
         deliveryAddress: data.delivery_address,
         creditBalance: data?.credit_balance,
+        quotationBalance: data?.quotation_balance,
+        customerLedger: data?.customerLedger,
         deliveryCity: data.delivery_city,
         deliveryPostalCode: data?.delivery_postal_code
     };
@@ -112,6 +113,9 @@ const CustomerController = {
 
         CustomerModel.find({}).then((data) => {
 
+
+            console.log(data, "dataaaa")
+
             if (!data) {
                 res.json({
                     message: "Internal Server Error",
@@ -133,6 +137,7 @@ const CustomerController = {
 
                 let convertedArray = data.map(convertToObject);
 
+                console.log(convertedArray, "ARRAY")
 
                 res.json({
 
@@ -146,7 +151,7 @@ const CustomerController = {
 
         }).catch((error) => {
 
-            console.log(error,"error")
+            console.log(error, "error")
 
             res.json({
                 message: "Internal Server Error",
@@ -270,6 +275,131 @@ const CustomerController = {
 
 
 
+
+    },
+
+    refundBalance: async (req, res) => {
+
+
+        let { amount, type, paymentMethod, transactionId, referenceId, customerDetails } = req.body
+
+        let customerLedger = {
+
+            date: new Date(),
+            paymentMethod: paymentMethod,
+            referenceId: referenceId,
+            transactionId: transactionId,
+            refund: amount,
+            transactionType: type.toLowerCase() == "invoice" ? "Refund on invoice" : "Refund on quotation"
+        }
+
+        try {
+
+            let customer = await CustomerModel.findById(customerDetails?.id)
+
+            if (type.toLowerCase() == "quotation") {
+
+                customer.quotation_balance -= Number(amount)
+
+            } else {
+                customer.credit_balance -= Number(amount)
+            }
+
+            customer.customerLedger.push(customerLedger)
+
+            customer.save()
+
+            let convertedArray = [customer].map(convertToObject)
+
+            res.json({
+                message: "Amount Successfully Refund",
+                status: true,
+                data: convertedArray[0]
+            })
+
+
+        } catch (error) {
+
+            res.json({
+                message: "Internal Server Error",
+                status: false,
+                error: error?.message
+            })
+
+
+        }
+
+
+
+
+
+
+
+    },
+
+
+    updateCheque: async (req, res) => {
+
+
+        let { selectedCustomer, ledger, selectedLedger } = req.body
+
+
+        let customer = await CustomerModel.findById(selectedCustomer?.id)
+
+
+
+        try {
+
+            let totalAmount = selectedLedger.toPay
+
+            if (selectedLedger?.transactionType?.toLowerCase() == "invoice") {
+
+                customer.credit_balance -= totalAmount
+
+
+            } else {
+                customer.quotation_balance -= totalAmount
+            }
+
+
+
+            let customerLedger = {
+
+                date: new Date(),
+                paymentMethod: "Cheque Cleared",
+                cheque_no: selectedLedger?.cheque_no,
+                bank_name: selectedLedger?.bank_name,
+                clear_date: selectedLedger?.clear_date,
+                refund: selectedLedger?.toPay,
+                transactionType: selectedLedger?.transactionType,
+                invoiceRef: selectedLedger?.invoiceNumber
+            }
+
+            customer.customerLedger.push(customerLedger)
+            customer.save()
+
+
+
+            let convertedArray = [customer].map(convertToObject)
+
+
+
+            res.json({
+                message: "Cheque status has been successfully updated",
+                status: true,
+                data: convertedArray[0]
+            })
+
+
+        } catch (error) {
+
+            res.json({
+                message: "Internal Server Error",
+                status: false,
+                error: error?.message
+            })
+
+        }
 
     }
 

@@ -16,13 +16,15 @@ const CustomerSchema = mongoose.Schema({
     accountNo: {
         type: Number,
         required: true
-},
+    },
     credit_balance: {
+        type: Number,
+    },
+    quotation_balance: {
         type: Number,
     },
     comment: {
         type: String,
-        // required: true
     },
     created_at: {
         type: Date,
@@ -43,7 +45,7 @@ const CustomerSchema = mongoose.Schema({
         // Set the default value to the current timestamp when a document is created
     },
     postal_code: {
-        type: Number,
+        type: String,
         // Set the default value to the current timestamp when a document is created
     },
 
@@ -88,6 +90,103 @@ const CustomerSchema = mongoose.Schema({
     delivery_postal_code: {
         type: String
     },
+    customerLedger: [{
+
+        date: {
+            type: Date,
+            default: Date.now
+        },
+        employeeName: {
+            type: String
+        },
+        status: {
+            type: String
+        },
+        employeeDetails: {
+            type: mongoose.Schema.Types.Mixed
+        },
+        productDetails: {
+            type: [mongoose.Schema.Types.Mixed]
+        },
+        returnProductDetails: {
+            type: [mongoose.Schema.Types.Mixed]
+        },
+        returnProductDetails: {
+            type: [mongoose.Schema.Types.Mixed]
+        },
+        vatAmount: {
+            type: Number
+        },
+        totalItems: {
+            type: Number
+        },
+        totalQty: {
+            type: Number
+        },
+        invoiceAmount: {
+            type: Number
+        },
+        invoiceType: {
+            type: String
+        },
+        paymentMethod:
+            { type: String },
+        paid: { type: Number },
+        toPay: { type: Number },
+        refund : {
+            type : Number
+        },
+        paidBackCash : {
+            type : Number
+        },
+        deductCredit : {
+            type : Number
+        },
+        returnAmount : {
+            type : Number
+        },
+        totalReturnInvoices : {
+            type : Number
+        },
+        returnInvoiceRef : {
+            type : String
+        },
+        exchangeSaleAmount : {
+            type :Number
+        },
+        invoiceNumber: { type: String },
+        invoiceBarcodeNumber: { type: Number },
+        referenceId: {
+            type: String
+        },
+        transactionId: {
+            type: String
+        },
+        cheque_no: {
+            type: String
+        },
+        bank_name: {
+            type: String
+        },
+        clear_date: {
+            type: Date
+        },
+        creditDays: {
+            type: Number
+        },
+        transactionType : {
+            type : String
+        },
+        invoiceRef : {
+            type : String
+        },
+        isChequeCleared: {
+            type: Boolean
+        },
+        chequeClearDate: {
+            type: Date
+        }
+    }]
 
 })
 

@@ -99,7 +99,7 @@ const damageProductSchema = mongoose.Schema({
         default: Date.now, // Set the default value to the current timestamp when a document is created
     },
     barcode: {
-        type: Number,
+        type: mongoose.Schema.Types.Mixed,
         unique: true,
         required: true
     },

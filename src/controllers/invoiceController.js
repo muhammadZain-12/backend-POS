@@ -2,7 +2,6 @@ const CustomerModel = require("../models/customerSchema")
 const InvoiceModel = require("../models/invoiceSchema")
 const ProductModel = require("../models/productSchema")
 const moment = require("moment")
-const multer = require("multer") // Set the destination folder for uploaded files
 const bwipjs = require("bwip-js")
 const fs = require('fs');
 const path = require("path")
@@ -50,17 +49,27 @@ function generateBarcode(barcodeNumber, imagePath) {
 }
 
 
-async function updateCustomerCreditBalance(customerId, subtotal, deductAmount) {
+async function updateCustomerCreditBalance(customerId, subtotal, deductAmount, invoiceData) {
 
 
 
     const updateAmount = deductAmount ? deductAmount : subtotal;
 
-    console.log(updateAmount, "updateAmount")
 
-    console.log(customerId, "customerId")
+    console.log(invoiceData?.vatAmount, "vatAmount")
 
-    await CustomerModel.findByIdAndUpdate(customerId, { $inc: { credit_balance: updateAmount } });
+
+
+    if (invoiceData?.vatAmount) {
+
+        await CustomerModel.findByIdAndUpdate(customerId, { $inc: { credit_balance: updateAmount } });
+
+    } else {
+
+        await CustomerModel.findByIdAndUpdate(customerId, { $inc: { quotation_balance: updateAmount } });
+
+    }
+
 }
 
 async function updateCashBalance(subtotal, invoiceNumber, customerDetails, employeeDetails, employeeId) {
@@ -95,6 +104,8 @@ const InvoiceController = {
         try {
             const invoiceData = req.body;
 
+            console.log(req.body,"body")
+
             const requiredFields = ['customerDetails', 'productDetails', 'total', 'subtotal', 'employeeDetails', 'status', 'paymentMethod', 'customerName', 'totalItems'];
             for (const field of requiredFields) {
                 if (!invoiceData[field]) {
@@ -109,7 +120,6 @@ const InvoiceController = {
             const barcodeImagePath = path.join(__dirname, '../products/', `${invoiceData.invoiceNumber}_barcode.png`);
 
 
-            // Map product details to update product quantities
             const productsToUpdate = invoiceData.productDetails.map(product => ({
 
                 productId: product._id,
@@ -153,7 +163,6 @@ const InvoiceController = {
                     $push: { productLedger: ledgerEntry }
                 });
 
-
             }));
 
 
@@ -169,7 +178,7 @@ const InvoiceController = {
 
             // Update customer credit balance if payment method is cheque or credit
             if (createdInvoice.paymentMethod.toLowerCase() === "cheque" || createdInvoice.paymentMethod.toLowerCase() === "credit") {
-                await updateCustomerCreditBalance(invoiceData.customerDetails?.id, createdInvoice.subtotal, invoiceData.deductAmount);
+                await updateCustomerCreditBalance(invoiceData.customerDetails?.id, createdInvoice.subtotal, invoiceData.deductAmount, invoiceData);
             }
 
             if (createdInvoice.paymentMethod.toLowerCase() === "cash") {
@@ -178,7 +187,35 @@ const InvoiceController = {
 
             }
 
+            let customerLedger = {
 
+                date: invoiceData?.saleDate,
+                employeeDetails: invoiceData?.employeeDetails,
+                employeeName: invoiceData?.employeeDetails?.employeeName,
+                status: invoiceData?.status,
+                productDetails: invoiceData?.productDetails,
+                vatAmount: invoiceData?.vatAmount,
+                totalItems: invoiceData?.totalItems,
+                totalQty: invoiceData?.totalQty,
+                transactionType : invoiceData?.vatAmount ? "Invoice" : "Quotation",
+                invoiceAmount: invoiceData?.subtotal,
+                invoiceType: "Sale Invoice",
+                paymentMethod: invoiceData?.paymentMethod,
+                paid: (invoiceData?.paymentMethod.toLowerCase() == "credit" || invoiceData?.paymentMethod.toLowerCase() == "cheque") ? 0 : invoiceData?.subtotal,
+                toPay: (invoiceData?.paymentMethod.toLowerCase() == "credit" || invoiceData?.paymentMethod.toLowerCase() == "cheque") ? invoiceData?.subtotal : 0,
+                invoiceNumber: invoiceData?.invoiceNumber,
+                invoiceBarcodeNumber: barcodeNumber,
+                referenceId: invoiceData?.referenceId,
+                transactionId: invoiceData?.transactionId,
+                cheque_no: invoiceData?.cheque_no,
+                bank_name: invoiceData?.bank_name,
+                clear_date: invoiceData?.clear_date,
+                creditDays: invoiceData?.creditDays,
+            }
+
+            await CustomerModel.findByIdAndUpdate(invoiceData?.customerDetails?.id, {
+                $push: { customerLedger: customerLedger }
+            });
             return res.json({ message: "Transaction successful", status: true, data: createdInvoice });
         } catch (error) {
             console.error(error);

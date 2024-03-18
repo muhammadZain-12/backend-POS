@@ -12,6 +12,7 @@ const cashModel = require("../models/cashSchema")
 
 
 
+
 function generateBarcode(barcodeNumber, imagePath) {
     return new Promise((resolve, reject) => {
         bwipjs.toBuffer({
@@ -80,7 +81,7 @@ const SaleReturnController = {
         let invoiceData = req.body
 
         let totalInvoice = await SaleReturnInvoiceModel.countDocuments({})
-                
+
         const barcodeNumber = await generateUniqueBarcodeNumber();
 
         const barcodeImagePath = path.join(__dirname, '../products/', `${invoiceData.invoiceNumber}_return_barcode.png`);
@@ -147,7 +148,7 @@ const SaleReturnController = {
                 },
                 cost_price: product?.cost_price,
                 trade_price: product?.trade_price,
-                discount_price:product?.discountPrice ?? 0,
+                discount_price: product?.discountPrice ?? 0,
                 warehouse_price: product?.warehouse_price,
                 retail_price: product?.retail_price,
                 supplierDetails: {
@@ -250,8 +251,14 @@ const SaleReturnController = {
                     if (customer) {
 
                         if (lessAmount) {
-                            let cashDeduct = Number(subtotal) - Number(customer?.credit_balance)
-                            await updateCashBalance(cashDeduct, invoiceData?.invoiceNumber, invoiceData?.customerDetails, invoiceData?.employeeDetails, invoiceData?.employeeId)
+                            if (invoiceData?.vatAmount) {
+                                let cashDeduct = Number(subtotal) - Number(customer?.credit_balance)
+                                await updateCashBalance(cashDeduct, invoiceData?.invoiceNumber, invoiceData?.customerDetails, invoiceData?.employeeDetails, invoiceData?.employeeId)
+                            } else {
+                                let cashDeduct = Number(subtotal) - Number(customer?.quotation_balance)
+                                await updateCashBalance(cashDeduct, invoiceData?.invoiceNumber, invoiceData?.customerDetails, invoiceData?.employeeDetails, invoiceData?.employeeId)
+                            }
+
                         }
                         else if (deductAmount) {
 
@@ -259,8 +266,14 @@ const SaleReturnController = {
                             await updateCashBalance(cashDeduct, invoiceData?.invoiceNumber, invoiceData?.customerDetails, invoiceData?.employeeDetails, invoiceData?.employeeId)
                         }
 
-                        let deductedBalance = lessAmount ? Number(customer?.credit_balance) : deductAmount ? Number(deductAmount) : Number(subtotal)
-                        customer.credit_balance -= deductedBalance; // Assuming the total amount is deducted from the credit balance
+                        let deductedBalance = lessAmount ? (invoiceData?.vatAmount ? Number(customer?.credit_balance) : Number(customer?.quotation_balance)) : deductAmount ? Number(deductAmount) : Number(subtotal)
+                        if (invoiceData?.vatAmount) {
+                            customer.credit_balance -= deductedBalance;
+                        } else {
+                            customer.quotation_balance -= deductedBalance;
+                        }
+
+                        // Assuming the total amount is deducted from the credit balance
                         await customer.save();
                     }
                 } catch (error) {
@@ -268,6 +281,96 @@ const SaleReturnController = {
                     // Handle error as needed
                 }
             }
+
+            const customer = await CustomerModel.findOne({ _id: customerDetails.id });
+
+            let customerLedger = {
+
+                date: invoiceData?.saleReturnDate,
+                employeeDetails: invoiceData?.employeeDetails,
+                employeeName: invoiceData?.employeeDetails?.employeeName,
+                status: invoiceData?.status,
+                productDetails: invoiceData?.productDetails,
+                vatAmount: invoiceData?.vatAmount,
+                totalItems: invoiceData?.totalItems,
+                totalQty: invoiceData?.totalQty,
+                transactionType: invoiceData?.vatAmount ? "Return Invoice" : "Return Quotation",
+                invoiceAmount: invoiceData?.subtotal,
+                invoiceType: "Sale Return Invoice",
+                paymentMethod: invoiceData?.paymentMethod,
+                paidBackCash: !deductCreditBalance ? invoiceData?.subtotal : lessAmount ? (Number(subtotal) - Number(invoiceData?.vatAmount ? customer?.credit_balance : customer?.quotation_balance)) : lessAmount ? (Number(subtotal) - (invoiceData?.vatAmount ? customer?.credit_balance : customer?.quotation_balance)) : 0,
+                deductCredit: deductCreditBalance ? lessAmount ? (invoiceData?.vatAmount ? Number(customer?.credit_balance) : Number(customer?.quotation_balance)) : deductAmount ? Number(deductAmount) : Number(subtotal) : 0,
+                invoiceNumber: invoiceData?.invoiceNumber,
+                returnInvoiceRef: invoiceData?.returnInvoiceRef,
+                invoiceBarcodeNumber: barcodeNumber,
+                referenceId: invoiceData?.referenceId,
+                transactionId: invoiceData?.transactionId,
+                cheque_no: invoiceData?.cheque_no,
+                bank_name: invoiceData?.bank_name,
+                clear_date: invoiceData?.clear_date,
+                creditDays: invoiceData?.creditDays,
+            }
+
+            // let previousLedger = [...customer.customerLedger]
+
+            // let refInvoice = previousLedger && previousLedger?.length > 0 && previousLedger?.filter((e, i) => {
+            //     return e?.invoiceNumber == customerLedger?.returnInvoiceRef
+            // })
+            // let otherInvoice = previousLedger && previousLedger?.length > 0 && previousLedger?.filter((e, i) => {
+            //     return e?.invoiceNumber !== customerLedger?.returnInvoiceRef
+            // })
+
+            // refInvoice = refInvoice?.[0]
+            // if (refInvoice?.returnAmount) {
+            //     refInvoice.returnAmount += Number(subtotal)
+            // } else {
+            //     refInvoice.returnAmount = Number(subtotal)
+            // }
+
+            // if (refInvoice?.totalReturnInvoices) {
+
+            //     refInvoice.totalReturnInvoices += 1
+
+            // }
+            // else {
+            //     refInvoice.totalReturnInvoices = 1
+            // }
+
+
+            // if (deductCreditBalance && refInvoice?.toPay) {
+            //     refInvoice.toPay -= lessAmount ? (invoiceData?.vatAmount ? Number(customer?.credit_balance) : Number(customer?.quotation_balance)) : deductAmount ? Number(deductAmount) : Number(subtotal)
+            // }
+            // else if (deductCreditBalance) {
+              
+            //     if (refInvoice?.deductCredit) {
+
+            //         refInvoice.deductCredit += lessAmount ? (invoiceData?.vatAmount ? Number(customer?.credit_balance) : Number(customer?.quotation_balance)) : deductAmount ? Number(deductAmount) : Number(subtotal)
+
+            //     } else {
+            //         refInvoice.deductCredit = lessAmount ? (invoiceData?.vatAmount ? Number(customer?.credit_balance) : Number(customer?.quotation_balance)) : deductAmount ? Number(deductAmount) : Number(subtotal)
+            //     }
+
+            //     if (refInvoice?.paidBackCash) {
+            //         refInvoice.paidBackCash += lessAmount ? (Number(subtotal) - Number(invoiceData?.vatAmount ? customer?.credit_balance : customer?.quotation_balance)) : 0
+            //     } else {
+            //         refInvoice.paidBackCash = lessAmount ? (Number(subtotal) - Number(invoiceData?.vatAmount ? customer?.credit_balance : customer?.quotation_balance)) : 0
+            //     }
+
+            // } 
+            // else {
+            //     if (refInvoice.paidBackCash) {
+            //         refInvoice.paidBackCash += Number(subtotal)
+            //     } else {
+            //         refInvoice.paidBackCash = Number(subtotal)
+            //     }
+            // }
+
+            // let allInvoices = [...otherInvoice, refInvoice]
+
+            customer.customerLedger.push(customerLedger)
+            // customer.customerLedger = allInvoices
+            customer.save()
+
 
             res.json({
                 message: "Transaction Successful",

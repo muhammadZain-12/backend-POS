@@ -102,8 +102,6 @@ const DepartmentController = {
         }
 
 
-        console.log(categoryPer, "percentafe")
-
         try {
             // Find the department by name
             const department = await DepartmentModel.findOne({ departmentName });
@@ -125,8 +123,6 @@ const DepartmentController = {
                     c: Number(categoryPer.c)
                 }
             });
-
-            console.log(department, "department")
 
             // Save the updated department
             const updatedDepartment = await department.save();

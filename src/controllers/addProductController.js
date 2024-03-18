@@ -305,9 +305,12 @@ const AddProductController = {
     get: async (req, res) => {
 
 
+
         try {
 
             let data = await productModel.find({})
+
+            console.log(data,"dataaa")
 
             res.json({
                 message: "Products Successfully Get",
@@ -317,6 +320,7 @@ const AddProductController = {
 
         } catch (error) {
 
+            console.log(error,"errorrr")
             res.json({
                 message: "Internal Server Error",
                 status: false

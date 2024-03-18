@@ -12,15 +12,15 @@ const ExchangeInvoiceSchema = mongoose.Schema({
         type: [mongoose.Schema.Types.Mixed],
         required: true
     },
-    returnProductDetails : {
+    returnProductDetails: {
         type: [mongoose.Schema.Types.Mixed],
         required: true
     },
     customerType: {
         type: String
     },
-    deductCreditBalance:{
-        type : Boolean
+    deductCreditBalance: {
+        type: Boolean
     },
     employeeDetails: {
         type: [mongoose.Schema.Types.Mixed],
@@ -41,14 +41,20 @@ const ExchangeInvoiceSchema = mongoose.Schema({
         type: Number,
         required: true
     },
+    returnSubtotal: {
+        type: Number
+    },
+    saleSubtotal: {
+        type: Number
+    },
     costPrice: {
         type: Number,
     },
-    barcodeImagePath : {
-        type : String
+    barcodeImagePath: {
+        type: String
     },
-    barcodeNumber : {
-        type : Number
+    barcodeNumber: {
+        type: Number
     },
     vatAmount: {
         type: Number,
@@ -63,9 +69,9 @@ const ExchangeInvoiceSchema = mongoose.Schema({
         type: Number,
         required: true
     },
-    totalQty : {
-        type : Number,
-        required : true
+    totalQty: {
+        type: Number,
+        required: true
     },
     customerName: {
         type: String,
@@ -106,8 +112,8 @@ const ExchangeInvoiceSchema = mongoose.Schema({
     bank_name: {
         type: String
     },
-    credit_days : {
-        type : Number
+    credit_days: {
+        type: Number
     },
     clear_date: {
         type: Date

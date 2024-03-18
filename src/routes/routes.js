@@ -77,7 +77,9 @@ const checkRole = (req, res, next) => {
 
     let data = req.user
 
-    if (data.role == "Manager" || data.role == "admin") {
+    console.log(data, "dataa")
+
+    if (data?.role == "Manager" || data?.role == "admin") {
 
         next()
 
@@ -85,13 +87,11 @@ const checkRole = (req, res, next) => {
 
         res.json({
             message: "You are not authorized",
+
             status: false
         })
 
     }
-
-
-
 }
 
 
@@ -105,7 +105,7 @@ router.put("/api/RestockProduct", authenticateMiddleware, checkRole, AddProductC
 
 
 router.post("/api/addMultipleProducts", authenticateMiddleware, checkRole, AddMultipleProductsController.post)
-router.get("/api/getProducts", authenticateMiddleware, checkRole, AddProductController.get)
+router.get("/api/getProducts", authenticateMiddleware, AddProductController.get)
 router.delete("/api/deleteproducts", authenticateMiddleware, checkRole, AddProductController.delete)
 router.put("/api/changeProductStatus", authenticateMiddleware, checkRole, AddProductController.changeStatus)
 
@@ -171,7 +171,7 @@ router.post("/api/addDamageProductsInTrash", authenticateMiddleware, checkRole, 
 
 router.post("/api/addProductDepartment", authenticateMiddleware, checkRole, DepartmentController.addDepartment)
 router.get("/api/getProductDepartment", authenticateMiddleware, checkRole, DepartmentController.getDepartment)
-router.post("/api/addProductCategory", authenticateMiddleware, checkRole, DepartmentController.addCategory)
+router.post("/api/addProductCategory", DepartmentController.addCategory)
 router.post("/api/addProductSubcategory", authenticateMiddleware, checkRole, DepartmentController.addSubcategory)
 router.post("/api/addProductMake", authenticateMiddleware, checkRole, makeController.addMake)
 router.get("/api/getProductMake", authenticateMiddleware, checkRole, makeController.getMake)
@@ -209,6 +209,10 @@ router.delete("/api/deleteSupplier/:id", authenticateMiddleware, checkRole, Supp
 router.put("/api/editSupplier", authenticateMiddleware, checkRole, SupplierController.put)
 router.put("/api/payToSupplier", authenticateMiddleware, checkRole, SupplierController.payAmount)
 
+
+router.put("/api/updateChequeStatus", authenticateMiddleware, checkRole, CustomerController.updateCheque)
+
+router.put("/api/refundBalance", authenticateMiddleware, checkRole, CustomerController.refundBalance)
 
 
 
