@@ -9,6 +9,12 @@ const ProductLedgerSchema = mongoose.Schema({
     status: {
         type: String
     },
+    productId : {
+        type : String
+    },
+    barcode : {
+        type : String
+    },
     cost_price: {
         type: Number
     },
@@ -56,7 +62,7 @@ const ProductLedgerSchema = mongoose.Schema({
             type: String
         },
         barcodeNumber: {
-            type: Number
+            type: String
         },
 
     }

@@ -3,6 +3,9 @@ const fs = require('fs');
 const path = require("path")
 const BwipJs = require("bwip-js");
 const supplierModel = require("./supplierSchema");
+const CustomerLedgerController = require("./customerLedgerController");
+const CustomerLedgerModel = require("../models/customerLedgerSchema");
+const ProductLedgerModel = require("../models/productLedgerSchema");
 
 
 
@@ -79,24 +82,11 @@ const AddMultipleProductsController = {
             return
         }
 
+
         let updateData = data && data.length > 0 && data.map((e, i) => {
 
 
-            const ledgerEntry = {
-                date: new Date(),
-                qty: e?.qty,
-                status: "purchase",
-                cost_price: e?.cost_price,
-                retail_price: e?.retail_price,
-                warehouse_price: e?.warehouse_price,
-                trade_price: e?.trade_price,
-                supplierDetails: {
-                    supplier_name: e?.supplier_name,
-                    supplier_address: e?.supplier_address,
-                    supplier_mobile_number: e?.supplier_mobile_number,
-                    supplier_id: e?.supplier_id
-                },
-            };
+
 
 
             return {
@@ -124,7 +114,7 @@ const AddMultipleProductsController = {
                 retail_price: e.retail_price,
                 barcode: e.barCode,
                 status: e.status,
-                productLedger: ledgerEntry
+                // productLedger: ledgerEntry
             }
 
         })
@@ -150,7 +140,7 @@ const AddMultipleProductsController = {
 
                     let supplier;
                     try {
-                        supplier = await supplierModel.findOne({supplierName : e?.supplier_name});
+                        supplier = await supplierModel.findOne({ supplierName: e?.supplier_name });
                         if (!supplier) {
                             return res.json({ status: false, message: 'Supplier not found.' });
                         }
@@ -162,7 +152,7 @@ const AddMultipleProductsController = {
                     // Push entry to supplier ledger
                     let supplier_ledger = {
                         productName: e.ProductName,
-                        barcode : e?.barcode,
+                        barcode: e?.barcode,
                         qty: e.qty,
                         cost_price: e.cost_price,
                         retail_price: e.retail_price,
@@ -188,6 +178,26 @@ const AddMultipleProductsController = {
                         return res.status(500).json({ status: false, message: 'Error saving supplier ledger.' });
                     }
 
+
+                    const ledgerEntry = {
+                        date: new Date(),
+                        qty: e?.qty,
+                        status: "purchase",
+                        barcode: e?.barCode,
+                        cost_price: e?.cost_price,
+                        retail_price: e?.retail_price,
+                        warehouse_price: e?.warehouse_price,
+                        trade_price: e?.trade_price,
+                        supplierDetails: {
+                            supplier_name: e?.supplier_name,
+                            supplier_address: e?.supplier_address,
+                            supplier_mobile_number: e?.supplier_mobile_number,
+                            supplier_id: e?.supplier_id
+                        },
+                    };
+
+                    await ProductLedgerModel.create(ledgerEntry)
+
                     return {
                         ...e,
                         barcodeImage: barcodeImage
@@ -196,6 +206,7 @@ const AddMultipleProductsController = {
 
 
                 const result = await productModel.insertMany(productsWithBarcodeImages);
+
                 res.json({
                     message: "Product added successfully",
                     status: true,

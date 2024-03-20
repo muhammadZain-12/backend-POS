@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require("path")
 const cashModel = require("../models/cashSchema")
 const CustomerLedgerModel = require("../models/customerLedgerSchema")
+const ProductLedgerModel = require("../models/productLedgerSchema")
 
 
 
@@ -125,7 +126,8 @@ const InvoiceController = {
                 trade_price: product?.trade_price,
                 warehouse_price: product?.warehouse_price,
                 retail_price: product?.retail_price,
-                discount_price: product?.discountPrice
+                discount_price: product?.discountPrice,
+                barcode: product?.barcode
 
             }));
 
@@ -136,9 +138,13 @@ const InvoiceController = {
                 });
 
 
+                console.log(product, "productsss")
+
                 const ledgerEntry = {
                     date: new Date(),
                     qty: -product.quantity,
+                    productId: product?.productId,
+                    barcode: product.barcode,
                     cost_price: product?.cost_price,
                     trade_price: product?.trade_price,
                     discount_price: product?.discount_price ? product?.discount_price : 0,
@@ -156,9 +162,11 @@ const InvoiceController = {
                     status: "sale"
                 };
 
-                await ProductModel.findByIdAndUpdate(product.productId, {
-                    $push: { productLedger: ledgerEntry }
-                });
+                // await ProductModel.findByIdAndUpdate(product.productId, {
+                //     $push: { productLedger: ledgerEntry }
+                // });
+
+                await ProductLedgerModel.create(ledgerEntry)
 
             }));
 

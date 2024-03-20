@@ -7,14 +7,8 @@ const vatController = {
 
         vatModel.findOne().then((data) => {
 
-            // let vatRate = data.vatRate
-
-            console.log(data, 'dataaa')
-
-            // console.log(vatRate)
-
             res.json({
-                message: "Vat Rate Successfully get",
+                message: "Company Information Successfully get",
                 status: true,
                 data: data
             })
@@ -39,17 +33,16 @@ const vatController = {
         let data = req.body
 
         let id = data._id
-        let rate = data.vatRate
+
+        
 
 
-        vatModel.findByIdAndUpdate(id, {
-            $set: { vatRate: rate }
-        }).then((data) => {
+        vatModel.findByIdAndUpdate(id,data).then((data) => {
 
             if (data) {
 
                 res.json({
-                    message: "Vat Rate Successfully get",
+                    message: "Company Information Successfully Updated",
                     status: true,
                     data: data
                 });

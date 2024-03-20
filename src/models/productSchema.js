@@ -174,7 +174,7 @@ const productSchema = mongoose.Schema({
     //         }
     //     }
     // ]
-    productLedger : [mongoose.Schema.Types.Mixed]
+    // productLedger : [mongoose.Schema.Types.Mixed]
 
 })
 

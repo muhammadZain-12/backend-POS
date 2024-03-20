@@ -70,12 +70,13 @@ const CustomerController = {
             order_location: data.orderLocation,
             credit_limits: data.creditLimits,
             credit_days: data.creditDays,
-
+            credit_balance: data?.creditBalance,
+            quotation_balance: data?.quotationBalance,
             discount: data.discount,
             price_level: data.priceLevel,
         }
 
-        CustomerModel.create(dataToSend).then((data) => {
+        CustomerModel.create(dataToSend).then(async (data) => {
 
             if (!data) {
                 res.json({
@@ -86,6 +87,20 @@ const CustomerController = {
             }
 
             if (data) {
+
+
+
+                console.log(data,"dataaaa")
+
+                let customerLedger = {
+
+                    date: new Date(),
+                    customerId: data?._id,
+                    toPay: Number(Number(data?.quotation_balance ||0) + Number(data?.credit_balance || 0)).toFixed(2),
+                    transactionType: "Opening Balance"
+                }
+
+                await CustomerLedgerModel.create(customerLedger)
 
                 let convertedArray = [data].map(convertToObject);
 

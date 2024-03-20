@@ -1,5 +1,7 @@
+const ProductLedgerModel = require("../models/productLedgerSchema")
 const productModel = require("../models/productSchema")
 const PuchaseOrderModel = require("../models/puchaseOrderSchema")
+const ProductLedgerController = require("./ProductLedgerController")
 
 
 
@@ -108,7 +110,6 @@ const PurchaseOrderController = {
 
 
 
-
             if (productDetails && productDetails?.length > 0 && productDetails?.every((e, i) => (e.orderQty - e?.arriveQty) == 0)) {
 
                 purchaseOrder.status = "completed"
@@ -134,6 +135,7 @@ const PurchaseOrderController = {
                         const ledgerEntry = {
                             date: new Date(),
                             qty: productDetail.arrivedQty,
+                            barcode : product?.barcode,
                             status: "purchase",
                             cost_price: productDetail.cost_price,
                             retail_price: productDetail.retail_price,
@@ -148,7 +150,10 @@ const PurchaseOrderController = {
                         };
 
 
-                        product.productLedger.push(ledgerEntry);
+                        // product.productLedger.push(ledgerEntry);
+
+                        await ProductLedgerModel.create(ledgerEntry)
+
                         delete productDetail.arrivedQty
                         delete product.arrivedQty
                         await product.save();
@@ -188,10 +193,6 @@ const PurchaseOrderController = {
                 const product = await productModel.findById(productDetail?._id);
                 if (product) {
 
-                    console.log(productDetail?.remainingQty, "productDetails")
-
-                    console.log(productDetail?.orderQty, "productDetails")
-
 
                     product.qty += Number(productDetail?.orderQty) - Number(productDetail?.arriveQty || 0);
                     product.cost_price = productDetail?.cost_price,
@@ -203,6 +204,7 @@ const PurchaseOrderController = {
                         date: new Date(),
                         qty: Number(productDetail?.orderQty) - Number(productDetail?.arriveQty || 0),
                         status: "purchase",
+                        barcode : product.barcode,
                         cost_price: productDetail.cost_price,
                         retail_price: productDetail.retail_price,
                         warehouse_price: productDetail.warehouse_price,
@@ -216,7 +218,9 @@ const PurchaseOrderController = {
                     };
 
 
-                    product.productLedger.push(ledgerEntry);
+                    // product.productLedger.push(ledgerEntry);
+
+                    await ProductLedgerModel.create(ledgerEntry)
 
                     delete productDetail.arrivedQty
                     delete product.arrivedQty
@@ -257,9 +261,6 @@ const PurchaseOrderController = {
     editPO: async (req, res) => {
 
         let purchaseOrderDetails = req.body
-
-
-        console.log(purchaseOrderDetails?._id, "iddd")
 
         PuchaseOrderModel.findByIdAndUpdate(purchaseOrderDetails?._id, purchaseOrderDetails).then((data) => {
 

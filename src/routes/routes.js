@@ -26,6 +26,7 @@ const EmployeeController = require("../controllers/EmployeeController")
 const PurchaseOrderController = require("../controllers/purchaseOrderController")
 const makeController = require("../models/makeController")
 const CustomerLedgerController = require("../controllers/customerLedgerController")
+const ProductLedgerController = require("../controllers/ProductLedgerController")
 
 
 require("dotenv").config()
@@ -126,7 +127,7 @@ router.get("/api/getInvoices/:id", authenticateMiddleware, InvoiceController.get
 router.get("/api/getDayAllInvoices", authenticateMiddleware, InvoiceController.getDayAll)
 router.get("/api/getAllInvoices", authenticateMiddleware, InvoiceController.getAll)
 router.get("/api/getVat", authenticateMiddleware, vatController.get)
-router.put("/api/changeVat", authenticateMiddleware, vatController.put)
+router.put("/api/changeCompanyInfomation", authenticateMiddleware, vatController.put)
 
 router.post("/api/AddDemandedProduct", authenticateMiddleware, DemandedProductController.post)
 router.get("/api/getDemandedProduct", authenticateMiddleware, DemandedProductController.get)
@@ -217,6 +218,9 @@ router.put("/api/refundBalance", authenticateMiddleware, checkRole, CustomerCont
 
 
 router.get("/api/getCustomerLedger/:id",CustomerLedgerController.getCustomerLedger)
+
+
+router.get("/api/getProductLedger/:barcode",ProductLedgerController.getProductLedger)
 
 
 

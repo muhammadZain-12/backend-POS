@@ -1,4 +1,5 @@
 const cashModel = require("../models/cashSchema");
+const ProductLedgerModel = require("../models/productLedgerSchema");
 const productModel = require("../models/productSchema")
 const supplierModel = require("./supplierSchema")
 
@@ -129,6 +130,7 @@ const ArrangeProductController = {
                                 retail_price: retail_price,
                                 warehouse_price: warehouse_price,
                                 trade_price: trade_price,
+                                barcode: barcode,
                                 supplierDetails: {
                                     paymentMethod: "credit",
                                     supplier_name: supplierName,
@@ -149,7 +151,7 @@ const ArrangeProductController = {
 
                                 productModel.findByIdAndUpdate(existingProduct._id, {
                                     $inc: { qty: qty },
-                                    $push: { productLedger: ledgerEntry },
+                                    // $push: { productLedger: ledgerEntry },
                                     $set: {
                                         cost_price: cost_price,
                                         trade_price: trade_price,
@@ -166,7 +168,10 @@ const ArrangeProductController = {
                                         product_name: productDetails?.product_name,
                                         department: productDetails?.department,
                                     }
-                                }).then((updatedProduct) => {
+                                }).then(async (updatedProduct) => {
+
+
+                                    await ProductLedgerModel.create(ledgerEntry)
 
 
                                     let data = {
@@ -309,6 +314,7 @@ const ArrangeProductController = {
                             date: new Date(),
                             qty: qty,
                             status: "local purchase",
+                            barcode: barcode,
                             cost_price: cost_price,
                             retail_price: retail_price,
                             warehouse_price: warehouse_price,
@@ -333,7 +339,7 @@ const ArrangeProductController = {
 
                             productModel.findByIdAndUpdate(existingProduct._id, {
                                 $inc: { qty: qty },
-                                $push: { productLedger: ledgerEntry },
+                                // $push: { productLedger: ledgerEntry },
                                 $set: {
                                     cost_price: cost_price,
                                     trade_price: trade_price,
@@ -347,7 +353,9 @@ const ArrangeProductController = {
                                     department: productDetails?.department,
 
                                 }
-                            }).then((updatedProduct) => {
+                            }).then(async (updatedProduct) => {
+
+                                await ProductLedgerModel.create(ledgerEntry)
 
                                 let data = {
 

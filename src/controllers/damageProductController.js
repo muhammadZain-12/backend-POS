@@ -1,4 +1,5 @@
 const damageProductModel = require("../models/damageProductsSchema")
+const ProductLedgerModel = require("../models/productLedgerSchema")
 const productModel = require("../models/productSchema")
 const trashProductModel = require("../models/TrashProductSchema")
 
@@ -144,7 +145,7 @@ const DamageProductController = {
         }
 
 
-        console.log(product,"products")        
+        console.log(product, "products")
 
 
         const ledgerEntry = {
@@ -194,6 +195,7 @@ const DamageProductController = {
                 const myLedgerEntry = {
                     date: new Date(),
                     qty: product?.DamageQty,
+                    barcode: product.barcode,
                     status: "damage to inventory transfer",
                     cost_price: product?.cost_price,
                     retail_price: product?.retail_price,
@@ -208,7 +210,8 @@ const DamageProductController = {
                 };
 
                 existingProduct.qty += Number(product.DamageQty);
-                existingProduct.productLedger.push(myLedgerEntry)
+                // existingProduct.productLedger.push(myLedgerEntry)
+                await ProductLedgerModel.create(myLedgerEntry)
                 await existingProduct.save();
             } else {
                 res.json({

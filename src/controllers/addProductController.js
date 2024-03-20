@@ -3,6 +3,7 @@ const productModel = require("../models/productSchema")
 const fs = require('fs');
 const path = require("path");
 const supplierModel = require("./supplierSchema");
+const ProductLedgerModel = require("../models/productLedgerSchema");
 
 
 
@@ -97,6 +98,7 @@ const AddProductController = {
             qty: qty,
             status: "purchase",
             cost_price: cost_price,
+            barcode: barCode,
             retail_price: retail_price,
             warehouse_price: warehouse_price,
             trade_price: trade_price,
@@ -134,8 +136,10 @@ const AddProductController = {
             IMEI: IMEI,
             barcode: barCode,
             status: status,
-            productLedger: ledgerEntry
+            // productLedger: ledgerEntry
         }
+
+
 
         try {
             // Check if the email already exists in the database
@@ -186,7 +190,7 @@ const AddProductController = {
         // Push entry to supplier ledger
         let supplier_ledger = {
             productName: dataToSend.product_name,
-            barcode : dataToSend?.barcode,
+            barcode: dataToSend?.barcode,
             qty: dataToSend.qty,
             cost_price: dataToSend.cost_price,
             retail_price: dataToSend.retail_price,
@@ -198,11 +202,11 @@ const AddProductController = {
         };
 
         supplier.supplier_ledger.push(supplier_ledger);
-        if(supplier.balance){
-        supplier.balance += (Number(dataToSend?.qty) * Number(dataToSend?.cost_price))
-    }else{
-        supplier.balance = Number(supplier_ledger?.totalAmount)
-    }
+        if (supplier.balance) {
+            supplier.balance += (Number(dataToSend?.qty) * Number(dataToSend?.cost_price))
+        } else {
+            supplier.balance = Number(supplier_ledger?.totalAmount)
+        }
         try {
             await supplier.save();
         } catch (error) {
@@ -212,7 +216,7 @@ const AddProductController = {
 
         productModel
             .create(dataToSend)
-            .then((data) => {
+            .then(async (data) => {
                 if (!data) {
                     res.json({
                         message: 'Internal Server Error',
@@ -221,6 +225,11 @@ const AddProductController = {
                     return
                 }
                 if (data) {
+
+                    ledgerEntry.productId = data?._id
+
+                    await ProductLedgerModel.create(ledgerEntry)
+
                     res.json({
                         message: 'product added successfully',
                         status: true,
@@ -274,10 +283,11 @@ const AddProductController = {
         try {
             // Check if the email already exists in the database
             const existingProduct = await productModel.findOne({ barcode: barcode });
-
+            ledgerEntry.productId = existingProduct?._id
+            ledgerEntry.barcode = existingProduct?.barcode
             if (existingProduct) {
                 await productModel.findByIdAndUpdate(existingProduct._id, {
-                    $push: { productLedger: ledgerEntry },
+                    // $push: { productLedger: ledgerEntry },
                     $set: {
                         cost_price: cost_price,
                         retail_price: retail_price,
@@ -286,6 +296,10 @@ const AddProductController = {
                     },
                     $inc: { qty: qty }
                 });
+
+
+                await ProductLedgerModel.create(ledgerEntry)
+
                 return res.json({ status: true, message: 'The Product Has Successfully Updated' });
             }
         }
@@ -310,7 +324,7 @@ const AddProductController = {
 
             let data = await productModel.find({})
 
-            console.log(data,"dataaa")
+            console.log(data, "dataaa")
 
             res.json({
                 message: "Products Successfully Get",
@@ -320,7 +334,7 @@ const AddProductController = {
 
         } catch (error) {
 
-            console.log(error,"errorrr")
+            console.log(error, "errorrr")
             res.json({
                 message: "Internal Server Error",
                 status: false

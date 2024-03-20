@@ -9,6 +9,7 @@ const fs = require('fs');
 const path = require("path")
 const cashModel = require("../models/cashSchema")
 const CustomerLedgerModel = require("../models/customerLedgerSchema")
+const ProductLedgerModel = require("../models/productLedgerSchema")
 
 
 
@@ -137,8 +138,11 @@ const SaleReturnController = {
         const updatePromises = productDetails.map(async (product) => {
 
 
+            console.log(product, "productssss")
+
             const ledgerEntry = {
                 date: new Date(),
+                barcode: product.barcode,
                 qty: product.DamageQty ? product.DamageQty : product?.saleQty,
                 invoiceDetails: {
                     customerDetails: invoiceData?.customerDetails,
@@ -173,10 +177,12 @@ const SaleReturnController = {
                 if (existingProduct) {
                     // If the product exists, update the damageQty
 
-                    await ProductModel.findByIdAndUpdate(product._id, {
-                        $push: { productLedger: ledgerEntry }
-                    });
+                    // await ProductModel.findByIdAndUpdate(product._id, {
+                    //     $push: { productLedger: ledgerEntry }
+                    // });
 
+
+                    await ProductLedgerModel.create(ledgerEntry)
                     existingProduct.qty += product.qty;
                     await existingProduct.save();
                 } else {
@@ -288,15 +294,15 @@ const SaleReturnController = {
             let customerLedger = {
 
                 date: invoiceData?.saleReturnDate,
-                customerId  : invoiceData?.customerDetails?.id,
+                customerId: invoiceData?.customerDetails?.id,
                 employeeDetails: invoiceData?.employeeDetails,
                 employeeName: invoiceData?.employeeDetails?.employeeName,
                 status: invoiceData?.status,
                 productDetails: invoiceData?.productDetails,
-                customerDetails : invoiceData?.customerDetails,
-                subtotal : invoiceData?.subtotal,
-                discount : invoiceData?.discount,
-                total : invoiceData?.total,
+                customerDetails: invoiceData?.customerDetails,
+                subtotal: invoiceData?.subtotal,
+                discount: invoiceData?.discount,
+                total: invoiceData?.total,
                 vatAmount: invoiceData?.vatAmount,
                 totalItems: invoiceData?.totalItems,
                 totalQty: invoiceData?.totalQty,
@@ -347,7 +353,7 @@ const SaleReturnController = {
             //     refInvoice.toPay -= lessAmount ? (invoiceData?.vatAmount ? Number(customer?.credit_balance) : Number(customer?.quotation_balance)) : deductAmount ? Number(deductAmount) : Number(subtotal)
             // }
             // else if (deductCreditBalance) {
-              
+
             //     if (refInvoice?.deductCredit) {
 
             //         refInvoice.deductCredit += lessAmount ? (invoiceData?.vatAmount ? Number(customer?.credit_balance) : Number(customer?.quotation_balance)) : deductAmount ? Number(deductAmount) : Number(subtotal)

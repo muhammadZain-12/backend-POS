@@ -11,6 +11,7 @@ const cashModel = require("../models/cashSchema")
 const trashProductModel = require("../models/TrashProductSchema")
 const DamageProductModel = require("../models/damageProductsSchema")
 const CustomerLedgerModel = require("../models/customerLedgerSchema")
+const ProductLedgerModel = require("../models/productLedgerSchema")
 
 
 
@@ -132,6 +133,7 @@ const exchangeController = {
             const productsToUpdate = invoiceData?.productDetails?.map(product => ({
                 productId: product._id,
                 quantity: product.saleQty,
+                barcode: product?.barcode,
                 supplier_name: product?.supplier_name,
                 supplier_address: product?.supplier_address,
                 supplier_mobile_number: product?.supplier_mobile_number,
@@ -154,6 +156,7 @@ const exchangeController = {
                 const ledgerEntry = {
                     date: new Date(),
                     qty: -product?.quantity,
+                    barcode: product.barcode,
                     invoiceDetails: {
                         customerDetails: invoiceData?.customerDetails,
                         invoiceNumber: invoiceData?.invoiceNumber,
@@ -178,11 +181,15 @@ const exchangeController = {
                 };
 
 
-                await ProductModel.findByIdAndUpdate(product.productId, {
-                    $inc: { qty: -product.quantity },
-                    $push: { productLedger: ledgerEntry }
-                    // Decrement the quantity by the sold quantity
-                });
+                // await ProductModel.findByIdAndUpdate(product.productId, {
+                //     $inc: { qty: -product.quantity },
+                //     $push: { productLedger: ledgerEntry }
+                //     // Decrement the quantity by the sold quantity
+                // });
+
+                await ProductLedgerModel.create(ledgerEntry)
+
+
             }));
 
 
@@ -194,10 +201,12 @@ const exchangeController = {
                 const ledgerEntry = {
                     date: new Date(),
                     qty: product.DamageQty ? product.DamageQty : product?.saleQty,
+                    barcode: product.barcode,
                     invoiceDetails: {
                         customerDetails: invoiceData?.customerDetails,
                         invoiceNumber: invoiceData?.invoiceNumber,
                         status: invoiceData?.status,
+
                         barcodeNumber: invoiceData?.barcodeNumber,
                         paymentMethod: invoiceData?.paymentMethod
                     },
@@ -226,9 +235,11 @@ const exchangeController = {
                     if (existingProduct) {
                         // If the product exists, update the damageQty
 
-                        await ProductModel.findByIdAndUpdate(product._id, {
-                            $push: { productLedger: ledgerEntry }
-                        });
+                        // await ProductModel.findByIdAndUpdate(product._id, {
+                        //     $push: { productLedger: ledgerEntry }
+                        // });
+
+                        await ProductLedgerModel.create(ledgerEntry)
 
                         existingProduct.qty += product.DamageQty ? product?.DamageQty : product?.saleQty;
                         await existingProduct.save();

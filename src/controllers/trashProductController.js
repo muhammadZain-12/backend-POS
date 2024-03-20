@@ -1,5 +1,6 @@
 const trashProductModel = require("../models/TrashProductSchema")
 const damageProductModel = require("../models/damageProductsSchema")
+const ProductLedgerModel = require("../models/productLedgerSchema")
 const productModel = require("../models/productSchema")
 
 
@@ -187,6 +188,7 @@ const TrashProductController = {
             const myLedgerEntry = {
                 date: new Date(),
                 qty: product?.DamageQty,
+                barcode : product?.barcode,
                 status: "Trash to inventory transfer",
                 cost_price: product?.cost_price,
                 retail_price: product?.retail_price,
@@ -205,7 +207,8 @@ const TrashProductController = {
 
             if (existingProduct) {
                 existingProduct.qty += Number(product.DamageQty);
-                existingProduct.productLedger.push(myLedgerEntry)
+                // existingProduct.productLedger.push(myLedgerEntry)
+                await ProductLedgerModel.create(myLedgerEntry)
                 await existingProduct.save();
             } else {
                 res.json({
