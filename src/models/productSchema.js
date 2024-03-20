@@ -114,66 +114,67 @@ const productSchema = mongoose.Schema({
     barcodeImage: {
         type: String
     },
-    productLedger: [
-        {
-            date: { type: Date, default: Date.now },
-            qty: { type: Number },
-            status: {
-                type: String
-            },
-            cost_price: {
-                type: Number
-            },
-            retail_price: {
-                type: Number
-            },
-            warehouse_price: {
-                type: Number
-            },
-            trade_price: {
-                type: Number
-            },
-            discount_price: {
-                type: Number,
-            },
-            supplierDetails: {
-                supplier_name: { type: String },
-                paymentMethod: { type: String },
-                supplier_address: { type: String },
-                supplier_mobile_number: { type: String },
-                supplier_id: {
-                    type: String
-                }
-            },
-            employeeId: {
-                type: String
-            },
-            employeeDetails: {
-                type: [mongoose.Schema.Types.Mixed],
-            },
-            invoiceDetails: {
+    // productLedger: [
+    //     {
+    //         date: { type: Date, default: Date.now },
+    //         qty: { type: Number },
+    //         status: {
+    //             type: String
+    //         },
+    //         cost_price: {
+    //             type: Number
+    //         },
+    //         retail_price: {
+    //             type: Number
+    //         },
+    //         warehouse_price: {
+    //             type: Number
+    //         },
+    //         trade_price: {
+    //             type: Number
+    //         },
+    //         discount_price: {
+    //             type: Number,
+    //         },
+    //         supplierDetails: {
+    //             supplier_name: { type: String },
+    //             paymentMethod: { type: String },
+    //             supplier_address: { type: String },
+    //             supplier_mobile_number: { type: String },
+    //             supplier_id: {
+    //                 type: String
+    //             }
+    //         },
+    //         employeeId: {
+    //             type: String
+    //         },
+    //         employeeDetails: {
+    //             type: [mongoose.Schema.Types.Mixed],
+    //         },
+    //         invoiceDetails: {
 
-                customerDetails: {
-                    type: [mongoose.Schema.Types.Mixed],
-                    required: true
-                },
-                invoiceNumber: {
-                    type: String
-                },
+    //             customerDetails: {
+    //                 type: [mongoose.Schema.Types.Mixed],
+    //                 required: true
+    //             },
+    //             invoiceNumber: {
+    //                 type: String
+    //             },
 
-                status: {
-                    type: String
-                },
-                paymentMethod: {
-                    type: String
-                },
-                barcodeNumber: {
-                    type: Number
-                },
+    //             status: {
+    //                 type: String
+    //             },
+    //             paymentMethod: {
+    //                 type: String
+    //             },
+    //             barcodeNumber: {
+    //                 type: Number
+    //             },
 
-            }
-        }
-    ]
+    //         }
+    //     }
+    // ]
+    productLedger : [mongoose.Schema.Types.Mixed]
 
 })
 

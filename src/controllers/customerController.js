@@ -1,3 +1,4 @@
+const CustomerLedgerModel = require("../models/customerLedgerSchema");
 const CustomerModel = require("../models/customerSchema")
 
 
@@ -286,6 +287,7 @@ const CustomerController = {
         let customerLedger = {
 
             date: new Date(),
+            customerId: customerDetails?.id,
             paymentMethod: paymentMethod,
             referenceId: referenceId,
             transactionId: transactionId,
@@ -305,18 +307,30 @@ const CustomerController = {
                 customer.credit_balance -= Number(amount)
             }
 
-            customer.customerLedger.push(customerLedger)
+            // customer.customerLedger.push(customerLedger)
 
             customer.save()
 
+
+            await CustomerLedgerModel.create(customerLedger)
+
+
             let convertedArray = [customer].map(convertToObject)
+
+
+            customerLedger.runningBalance = Number(customer?.credit_balance || 0) + Number(customer?.quotation_balance || 0)
+
+            console.log(customer, "customer", customer?.credit_balance, "blance")
+
+            console.log(customerLedger?.runningBalance, "running")
+
 
             res.json({
                 message: "Amount Successfully Refund",
                 status: true,
-                data: convertedArray[0]
+                data: convertedArray[0],
+                customerLedger: customerLedger
             })
-
 
         } catch (error) {
 
@@ -366,6 +380,7 @@ const CustomerController = {
             let customerLedger = {
 
                 date: new Date(),
+                customerId: selectedCustomer?.id,
                 paymentMethod: "Cheque Cleared",
                 cheque_no: selectedLedger?.cheque_no,
                 bank_name: selectedLedger?.bank_name,
@@ -375,19 +390,21 @@ const CustomerController = {
                 invoiceRef: selectedLedger?.invoiceNumber
             }
 
-            customer.customerLedger.push(customerLedger)
+
+            await CustomerLedgerModel.create(customerLedger)
+
+            // customer.customerLedger.push(customerLedger)
             customer.save()
 
-
+            customerLedger.runningBalance = Number(customer?.credit_balance || 0) + Number(customer?.quotation_balance || 0)
 
             let convertedArray = [customer].map(convertToObject)
-
-
 
             res.json({
                 message: "Cheque status has been successfully updated",
                 status: true,
-                data: convertedArray[0]
+                data: convertedArray[0],
+                customerLedger: customerLedger
             })
 
 

@@ -25,6 +25,7 @@ const CashController = require("../controllers/cashController")
 const EmployeeController = require("../controllers/EmployeeController")
 const PurchaseOrderController = require("../controllers/purchaseOrderController")
 const makeController = require("../models/makeController")
+const CustomerLedgerController = require("../controllers/customerLedgerController")
 
 
 require("dotenv").config()
@@ -213,6 +214,9 @@ router.put("/api/payToSupplier", authenticateMiddleware, checkRole, SupplierCont
 router.put("/api/updateChequeStatus", authenticateMiddleware, checkRole, CustomerController.updateCheque)
 
 router.put("/api/refundBalance", authenticateMiddleware, checkRole, CustomerController.refundBalance)
+
+
+router.get("/api/getCustomerLedger/:id",CustomerLedgerController.getCustomerLedger)
 
 
 

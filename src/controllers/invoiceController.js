@@ -6,6 +6,7 @@ const bwipjs = require("bwip-js")
 const fs = require('fs');
 const path = require("path")
 const cashModel = require("../models/cashSchema")
+const CustomerLedgerModel = require("../models/customerLedgerSchema")
 
 
 
@@ -56,8 +57,6 @@ async function updateCustomerCreditBalance(customerId, subtotal, deductAmount, i
     const updateAmount = deductAmount ? deductAmount : subtotal;
 
 
-    console.log(invoiceData?.vatAmount, "vatAmount")
-
 
 
     if (invoiceData?.vatAmount) {
@@ -103,8 +102,6 @@ const InvoiceController = {
     post: async (req, res) => {
         try {
             const invoiceData = req.body;
-
-            console.log(req.body,"body")
 
             const requiredFields = ['customerDetails', 'productDetails', 'total', 'subtotal', 'employeeDetails', 'status', 'paymentMethod', 'customerName', 'totalItems'];
             for (const field of requiredFields) {
@@ -190,14 +187,19 @@ const InvoiceController = {
             let customerLedger = {
 
                 date: invoiceData?.saleDate,
+                customerId: invoiceData?.customerDetails?.id,
                 employeeDetails: invoiceData?.employeeDetails,
                 employeeName: invoiceData?.employeeDetails?.employeeName,
                 status: invoiceData?.status,
+                subtotal: invoiceData?.subtotal,
+                discount: invoiceData?.discount,
+                total: invoiceData?.total,
                 productDetails: invoiceData?.productDetails,
+                customerDetails: invoiceData?.customerDetails,
                 vatAmount: invoiceData?.vatAmount,
                 totalItems: invoiceData?.totalItems,
                 totalQty: invoiceData?.totalQty,
-                transactionType : invoiceData?.vatAmount ? "Invoice" : "Quotation",
+                transactionType: invoiceData?.vatAmount ? "Invoice" : "Quotation",
                 invoiceAmount: invoiceData?.subtotal,
                 invoiceType: "Sale Invoice",
                 paymentMethod: invoiceData?.paymentMethod,
@@ -213,9 +215,13 @@ const InvoiceController = {
                 creditDays: invoiceData?.creditDays,
             }
 
-            await CustomerModel.findByIdAndUpdate(invoiceData?.customerDetails?.id, {
-                $push: { customerLedger: customerLedger }
-            });
+            await CustomerLedgerModel.create(customerLedger)
+
+            // await CustomerModel.findByIdAndUpdate(invoiceData?.customerDetails?.id, {
+            //     $push: { customerLedger: customerLedger }
+            // });
+
+
             return res.json({ message: "Transaction successful", status: true, data: createdInvoice });
         } catch (error) {
             console.error(error);

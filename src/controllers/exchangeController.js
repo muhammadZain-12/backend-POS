@@ -10,6 +10,7 @@ const ExchangeInvoiceModel = require("../models/exchangeInvoiceSchema")
 const cashModel = require("../models/cashSchema")
 const trashProductModel = require("../models/TrashProductSchema")
 const DamageProductModel = require("../models/damageProductsSchema")
+const CustomerLedgerModel = require("../models/customerLedgerSchema")
 
 
 
@@ -361,9 +362,14 @@ const exchangeController = {
 
                 date: invoiceData?.exchangeDate,
                 employeeDetails: invoiceData?.employeeDetails,
+                customerId: invoiceData?.customerDetails?.id,
                 employeeName: invoiceData?.employeeDetails?.employeeName,
+                subtotal: invoiceData?.subtotal,
+                discount: invoiceData?.discount,
+                total: invoiceData?.total,
                 status: invoiceData?.status,
                 productDetails: invoiceData?.productDetails,
+                customerDetails: invoiceData?.customerDetails,
                 returnProductDetails: invoiceData?.returnProductDetails,
                 vatAmount: invoiceData?.vatAmount,
                 totalItems: invoiceData?.totalItems,
@@ -443,11 +449,14 @@ const exchangeController = {
 
             // let allInvoices = [...otherInvoice, refInvoice]
 
-            customer.customerLedger.push(customerLedger)
+            // customer.customerLedger.push(customerLedger)
 
             // customer.customerLedger = allInvoices
 
-            customer.save()
+            // customer.save()
+
+            await CustomerLedgerModel.create(customerLedger)
+
 
 
             return res.json({ message: "Transaction successful", status: true, data: createdInvoice });

@@ -8,6 +8,7 @@ const bwipjs = require("bwip-js")
 const fs = require('fs');
 const path = require("path")
 const cashModel = require("../models/cashSchema")
+const CustomerLedgerModel = require("../models/customerLedgerSchema")
 
 
 
@@ -287,10 +288,15 @@ const SaleReturnController = {
             let customerLedger = {
 
                 date: invoiceData?.saleReturnDate,
+                customerId  : invoiceData?.customerDetails?.id,
                 employeeDetails: invoiceData?.employeeDetails,
                 employeeName: invoiceData?.employeeDetails?.employeeName,
                 status: invoiceData?.status,
                 productDetails: invoiceData?.productDetails,
+                customerDetails : invoiceData?.customerDetails,
+                subtotal : invoiceData?.subtotal,
+                discount : invoiceData?.discount,
+                total : invoiceData?.total,
                 vatAmount: invoiceData?.vatAmount,
                 totalItems: invoiceData?.totalItems,
                 totalQty: invoiceData?.totalQty,
@@ -367,9 +373,11 @@ const SaleReturnController = {
 
             // let allInvoices = [...otherInvoice, refInvoice]
 
-            customer.customerLedger.push(customerLedger)
+            // customer.customerLedger.push(customerLedger)
             // customer.customerLedger = allInvoices
-            customer.save()
+            // customer.save()
+
+            await CustomerLedgerModel.create(customerLedger)
 
 
             res.json({
