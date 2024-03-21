@@ -85,12 +85,9 @@ async function updateCashBalance(subtotal, invoiceNumber, customerDetails, emplo
         customerDetails: customerDetails
 
     }
-
-    console.log(dataToSend, "datatOsEND")
-
-
-
     await cashModel.create(dataToSend);
+
+
 }
 
 function generateUniqueBarcodeNumber() {
@@ -137,8 +134,6 @@ const InvoiceController = {
                     $inc: { qty: -product.quantity } // Decrement the quantity by the sold quantity
                 });
 
-
-                console.log(product, "productsss")
 
                 const ledgerEntry = {
                     date: new Date(),
@@ -352,6 +347,803 @@ const InvoiceController = {
         }
 
 
+
+    },
+    changePaymentMethod: async (req, res) => {
+
+        let { invoiceData, paymentMethod, transactionId, referenceId, bankName, chequeNo, clearDate, creditDays } = req.body
+
+
+        if (invoiceData?.paymentMethod?.toLowerCase() == "cash") {
+
+
+            if (paymentMethod?.toLowerCase() == "online" || paymentMethod?.toLowerCase() == "card") {
+
+
+                let dataToSend = {
+
+                    amount: -invoiceData?.subtotal,
+                    invoiceNumber: invoiceData?.invoiceNumber,
+                    status: "change paymentMethod",
+                    employeeId: invoiceData?.employeeId,
+                    employeeDetails: invoiceData?.employeeDetails,
+                    customerDetails: invoiceData?.customerDetails
+
+                }
+
+                await cashModel.create(dataToSend);
+
+
+                let customerLedger = {
+
+                    date: invoiceData?.saleDate,
+                    customerId: invoiceData?.customerDetails?.id,
+                    employeeDetails: invoiceData?.employeeDetails,
+                    employeeName: invoiceData?.employeeDetails?.employeeName,
+                    status: invoiceData?.status,
+                    subtotal: invoiceData?.subtotal,
+                    discount: invoiceData?.discount,
+                    total: invoiceData?.total,
+                    productDetails: invoiceData?.productDetails,
+                    customerDetails: invoiceData?.customerDetails,
+                    vatAmount: invoiceData?.vatAmount,
+                    totalItems: invoiceData?.totalItems,
+                    totalQty: invoiceData?.totalQty,
+                    transactionType: invoiceData?.vatAmount ? "Invoice" : "Quotation",
+                    invoiceAmount: invoiceData?.subtotal,
+                    invoiceType: "Sale Invoice",
+                    paymentMethod: paymentMethod,
+                    paid: invoiceData?.subtotal,
+                    toPay: 0,
+                    invoiceNumber: invoiceData?.invoiceNumber,
+                    invoiceBarcodeNumber: invoiceData?.barcodeNumber,
+                    referenceId: referenceId,
+                    transactionId: transactionId,
+                    cheque_no: invoiceData?.cheque_no,
+                    bank_name: invoiceData?.bank_name,
+                    clear_date: invoiceData?.clear_date,
+                    creditDays: invoiceData?.creditDays,
+                }
+
+                let updatedCustomerLedger = await CustomerLedgerModel.findOneAndUpdate(
+                    { invoiceNumber: invoiceData?.invoiceNumber, status: "Sale" }, // Query to find the document
+                    customerLedger, // New data to replace with existing document
+                    { new: true, upsert: true } // Options: "new" to return the modified document, "upsert" to create a new document if it doesn't exist
+                );
+
+
+
+                invoiceData.paymentMethod = paymentMethod
+                invoiceData.referenceId = referenceId
+                invoiceData.transactionId = transactionId
+
+                InvoiceModel.findByIdAndUpdate(invoiceData?._id, invoiceData).then((updatedData) => {
+
+                    if (!updatedData) {
+
+                        res.json({
+                            message: "Internal Server Error",
+                            status: false
+                        })
+                        return
+                    }
+
+                    res.json({
+                        message: "Payment Method Successfully Updated",
+                        status: true,
+                        data: invoiceData
+                    })
+
+
+                }).catch((error) => {
+
+                    res.json({
+                        message: "Internal Server Error",
+                        status: false,
+                        error: error?.message
+                    })
+
+                })
+
+
+
+
+
+
+
+
+
+            }
+
+            else if (paymentMethod?.toLowerCase() == "credit" || paymentMethod?.toLowerCase() == "cheque") {
+
+
+                let dataToSend = {
+
+                    amount: -invoiceData?.subtotal,
+                    invoiceNumber: invoiceData?.invoiceNumber,
+                    status: "change paymentMethod",
+                    employeeId: invoiceData?.employeeId,
+                    employeeDetails: invoiceData?.employeeDetails,
+                    customerDetails: invoiceData?.customerDetails
+
+                }
+
+                await cashModel.create(dataToSend);
+
+
+
+
+                let invoiceAmount = invoiceData?.subtotal
+
+                let customerId = invoiceData?.customerDetails[0]?.id
+
+                let customerUpdate = await CustomerModel.findById(customerId)
+
+                if (invoiceData?.vatAmount) {
+
+                    customerUpdate.credit_balance += invoiceAmount
+
+                } else {
+
+                    customerUpdate.quotation_balance += invoiceAmount
+
+
+                }
+
+                customerUpdate.save()
+
+
+                let customerLedger = {
+
+                    date: invoiceData?.saleDate,
+                    customerId: invoiceData?.customerDetails?.id,
+                    employeeDetails: invoiceData?.employeeDetails,
+                    employeeName: invoiceData?.employeeDetails?.employeeName,
+                    status: invoiceData?.status,
+                    subtotal: invoiceData?.subtotal,
+                    discount: invoiceData?.discount,
+                    total: invoiceData?.total,
+                    productDetails: invoiceData?.productDetails,
+                    customerDetails: invoiceData?.customerDetails,
+                    vatAmount: invoiceData?.vatAmount,
+                    totalItems: invoiceData?.totalItems,
+                    totalQty: invoiceData?.totalQty,
+                    transactionType: invoiceData?.vatAmount ? "Invoice" : "Quotation",
+                    invoiceAmount: invoiceData?.subtotal,
+                    invoiceType: "Sale Invoice",
+                    paymentMethod: paymentMethod,
+                    paid: 0,
+                    toPay: invoiceData?.subtotal,
+                    invoiceNumber: invoiceData?.invoiceNumber,
+                    invoiceBarcodeNumber: invoiceData?.barcodeNumber,
+                    referenceId: referenceId,
+                    transactionId: transactionId,
+                    cheque_no: chequeNo,
+                    bank_name: bankName,
+                    clear_date: clearDate,
+                    creditDays: creditDays,
+                }
+
+                let updatedCustomerLedger = await CustomerLedgerModel.findOneAndUpdate(
+                    { invoiceNumber: invoiceData?.invoiceNumber, status: "Sale" }, // Query to find the document
+                    customerLedger, // New data to replace with existing document
+                    { new: true, upsert: true } // Options: "new" to return the modified document, "upsert" to create a new document if it doesn't exist
+                );
+
+
+                invoiceData.paymentMethod = paymentMethod
+                invoiceData.referenceId = referenceId
+                invoiceData.transactionId = transactionId
+                invoiceData.creditDays = creditDays
+                invoiceData.cheque_no = chequeNo
+                invoiceData.bank_name = bankName
+                invoiceData.clear_date = clearDate
+
+
+                InvoiceModel.findByIdAndUpdate(invoiceData?._id, invoiceData).then((updatedData) => {
+
+                    if (!updatedData) {
+
+                        res.json({
+                            message: "Internal Server Error",
+                            status: false
+                        })
+                        return
+                    }
+
+                    res.json({
+                        message: "Payment Method Successfully Updated",
+                        status: true,
+                        data: invoiceData
+                    })
+
+
+                }).catch((error) => {
+
+                    res.json({
+                        message: "Internal Server Error",
+                        status: false,
+                        error: error?.message
+                    })
+
+                })
+
+
+            }
+
+            return
+
+        }
+
+        if (invoiceData?.paymentMethod?.toLowerCase() == "online" || invoiceData?.paymentMethod?.toLowerCase() == "card") {
+
+
+            if (paymentMethod.toLowerCase() == "cash") {
+
+
+                let dataToSend = {
+
+                    amount: invoiceData?.subtotal,
+                    invoiceNumber: invoiceData?.invoiceNumber,
+                    status: "change paymentMethod",
+                    employeeId: invoiceData?.employeeId,
+                    employeeDetails: invoiceData?.employeeDetails,
+                    customerDetails: invoiceData?.customerDetails
+                }
+
+                await cashModel.create(dataToSend);
+
+                let customerLedger = {
+
+                    date: invoiceData?.saleDate,
+                    customerId: invoiceData?.customerDetails?.id,
+                    employeeDetails: invoiceData?.employeeDetails,
+                    employeeName: invoiceData?.employeeDetails?.employeeName,
+                    status: invoiceData?.status,
+                    subtotal: invoiceData?.subtotal,
+                    discount: invoiceData?.discount,
+                    total: invoiceData?.total,
+                    productDetails: invoiceData?.productDetails,
+                    customerDetails: invoiceData?.customerDetails,
+                    vatAmount: invoiceData?.vatAmount,
+                    totalItems: invoiceData?.totalItems,
+                    totalQty: invoiceData?.totalQty,
+                    transactionType: invoiceData?.vatAmount ? "Invoice" : "Quotation",
+                    invoiceAmount: invoiceData?.subtotal,
+                    invoiceType: "Sale Invoice",
+                    paymentMethod: paymentMethod,
+                    paid: invoiceData?.subtotal,
+                    toPay: 0,
+                    invoiceNumber: invoiceData?.invoiceNumber,
+                    invoiceBarcodeNumber: invoiceData?.barcodeNumber,
+                    referenceId: referenceId,
+                    transactionId: transactionId,
+                    cheque_no: chequeNo,
+                    bank_name: bankName,
+                    clear_date: clearDate,
+                    creditDays: creditDays,
+                }
+
+                let updatedCustomerLedger = await CustomerLedgerModel.findOneAndUpdate(
+                    { invoiceNumber: invoiceData?.invoiceNumber, status: "Sale" }, // Query to find the document
+                    customerLedger, // New data to replace with existing document
+                    { new: true, upsert: true } // Options: "new" to return the modified document, "upsert" to create a new document if it doesn't exist
+                );
+
+
+                invoiceData.paymentMethod = paymentMethod
+                invoiceData.referenceId = referenceId
+                invoiceData.transactionId = transactionId
+                invoiceData.creditDays = creditDays
+                invoiceData.cheque_no = chequeNo
+                invoiceData.bank_name = bankName
+                invoiceData.clear_date = clearDate
+
+                InvoiceModel.findByIdAndUpdate(invoiceData?._id, invoiceData).then((updatedData) => {
+
+                    if (!updatedData) {
+
+                        res.json({
+                            message: "Internal Server Error",
+                            status: false
+                        })
+                        return
+                    }
+
+                    res.json({
+                        message: "Payment Method Successfully Updated",
+                        status: true,
+                        data: invoiceData
+                    })
+
+
+                }).catch((error) => {
+
+                    res.json({
+                        message: "Internal Server Error",
+                        status: false,
+                        error: error?.message
+                    })
+
+                })
+
+            }
+
+            else if (paymentMethod.toLowerCase() == "credit" || paymentMethod.toLowerCase() == "cheque") {
+
+
+                let invoiceAmount = invoiceData?.subtotal
+
+                let customerId = invoiceData?.customerDetails[0]?.id
+
+                let customerUpdate = await CustomerModel.findById(customerId)
+
+                if (invoiceData?.vatAmount) {
+
+                    customerUpdate.credit_balance += invoiceAmount
+
+                } else {
+
+                    customerUpdate.quotation_balance += invoiceAmount
+
+
+                }
+
+                customerUpdate.save()
+
+                let customerLedger = {
+
+                    date: invoiceData?.saleDate,
+                    customerId: invoiceData?.customerDetails?.id,
+                    employeeDetails: invoiceData?.employeeDetails,
+                    employeeName: invoiceData?.employeeDetails?.employeeName,
+                    status: invoiceData?.status,
+                    subtotal: invoiceData?.subtotal,
+                    discount: invoiceData?.discount,
+                    total: invoiceData?.total,
+                    productDetails: invoiceData?.productDetails,
+                    customerDetails: invoiceData?.customerDetails,
+                    vatAmount: invoiceData?.vatAmount,
+                    totalItems: invoiceData?.totalItems,
+                    totalQty: invoiceData?.totalQty,
+                    transactionType: invoiceData?.vatAmount ? "Invoice" : "Quotation",
+                    invoiceAmount: invoiceData?.subtotal,
+                    invoiceType: "Sale Invoice",
+                    paymentMethod: paymentMethod,
+                    paid: 0,
+                    toPay: invoiceData?.subtotal,
+                    invoiceNumber: invoiceData?.invoiceNumber,
+                    invoiceBarcodeNumber: invoiceData?.barcodeNumber,
+                    referenceId: referenceId,
+                    transactionId: transactionId,
+                    cheque_no: chequeNo,
+                    bank_name: bankName,
+                    clear_date: clearDate,
+                    creditDays: creditDays,
+                }
+
+                let updatedCustomerLedger = await CustomerLedgerModel.findOneAndUpdate(
+                    { invoiceNumber: invoiceData?.invoiceNumber, status: "Sale" }, // Query to find the document
+                    customerLedger, // New data to replace with existing document
+                    { new: true, upsert: true } // Options: "new" to return the modified document, "upsert" to create a new document if it doesn't exist
+                );
+
+
+                invoiceData.paymentMethod = paymentMethod
+                invoiceData.referenceId = referenceId
+                invoiceData.transactionId = transactionId
+                invoiceData.creditDays = creditDays
+                invoiceData.cheque_no = chequeNo
+                invoiceData.bank_name = bankName
+                invoiceData.clear_date = clearDate
+
+
+                InvoiceModel.findByIdAndUpdate(invoiceData?._id, invoiceData).then((updatedData) => {
+
+                    if (!updatedData) {
+
+                        res.json({
+                            message: "Internal Server Error",
+                            status: false
+                        })
+                        return
+                    }
+
+                    res.json({
+                        message: "Payment Method Successfully Updated",
+                        status: true,
+                        data: invoiceData
+                    })
+
+
+                }).catch((error) => {
+
+                    res.json({
+                        message: "Internal Server Error",
+                        status: false,
+                        error: error?.message
+                    })
+
+                })
+
+
+
+
+
+            }
+
+            else if (paymentMethod?.toLowerCase() == "online" || paymentMethod?.toLowerCase() == "card") {
+
+                let customerLedger = {
+
+                    date: invoiceData?.saleDate,
+                    customerId: invoiceData?.customerDetails?.id,
+                    employeeDetails: invoiceData?.employeeDetails,
+                    employeeName: invoiceData?.employeeDetails?.employeeName,
+                    status: invoiceData?.status,
+                    subtotal: invoiceData?.subtotal,
+                    discount: invoiceData?.discount,
+                    total: invoiceData?.total,
+                    productDetails: invoiceData?.productDetails,
+                    customerDetails: invoiceData?.customerDetails,
+                    vatAmount: invoiceData?.vatAmount,
+                    totalItems: invoiceData?.totalItems,
+                    totalQty: invoiceData?.totalQty,
+                    transactionType: invoiceData?.vatAmount ? "Invoice" : "Quotation",
+                    invoiceAmount: invoiceData?.subtotal,
+                    invoiceType: "Sale Invoice",
+                    paymentMethod: paymentMethod,
+                    paid: invoiceData?.subtotal,
+                    toPay: 0,
+                    invoiceNumber: invoiceData?.invoiceNumber,
+                    invoiceBarcodeNumber: invoiceData?.barcodeNumber,
+                    referenceId: referenceId,
+                    transactionId: transactionId,
+                    cheque_no: chequeNo,
+                    bank_name: bankName,
+                    clear_date: clearDate,
+                    creditDays: creditDays,
+                }
+
+                let updatedCustomerLedger = await CustomerLedgerModel.findOneAndUpdate(
+                    { invoiceNumber: invoiceData?.invoiceNumber, status: "Sale" }, // Query to find the document
+                    customerLedger, // New data to replace with existing document
+                    { new: true, upsert: true } // Options: "new" to return the modified document, "upsert" to create a new document if it doesn't exist
+                );
+
+
+                invoiceData.paymentMethod = paymentMethod
+                invoiceData.referenceId = referenceId
+                invoiceData.transactionId = transactionId
+                invoiceData.creditDays = creditDays
+                invoiceData.cheque_no = chequeNo
+                invoiceData.bank_name = bankName
+                invoiceData.clear_date = clearDate
+
+
+                InvoiceModel.findByIdAndUpdate(invoiceData?._id, invoiceData).then((updatedData) => {
+
+                    if (!updatedData) {
+
+                        res.json({
+                            message: "Internal Server Error",
+                            status: false
+                        })
+                        return
+                    }
+
+                    res.json({
+                        message: "Payment Method Successfully Updated",
+                        status: true,
+                        data: invoiceData
+                    })
+
+
+                }).catch((error) => {
+
+                    res.json({
+                        message: "Internal Server Error",
+                        status: false,
+                        error: error?.message
+                    })
+
+                })
+
+
+            }
+
+        }
+
+        if (invoiceData?.paymentMethod?.toLowerCase() == "credit" || invoiceData?.paymentMethod?.toLowerCase() == "cheque") {
+
+            if (paymentMethod.toLowerCase() == "cash") {
+
+
+                let dataToSend = {
+
+                    amount: invoiceData?.subtotal,
+                    invoiceNumber: invoiceData?.invoiceNumber,
+                    status: "change paymentMethod",
+                    employeeId: invoiceData?.employeeId,
+                    employeeDetails: invoiceData?.employeeDetails,
+                    customerDetails: invoiceData?.customerDetails
+                }
+
+                await cashModel.create(dataToSend);
+
+                let invoiceAmount = invoiceData?.subtotal
+                let customerId = invoiceData?.customerDetails[0]?.id
+                let customerUpdate = await CustomerModel.findById(customerId)
+
+                if (invoiceData?.vatAmount) {
+                    customerUpdate.credit_balance -= invoiceAmount
+                } else {
+                    customerUpdate.quotation_balance -= invoiceAmount
+                }
+
+                customerUpdate.save()
+
+                let customerLedger = {
+
+                    date: invoiceData?.saleDate,
+                    customerId: invoiceData?.customerDetails?.id,
+                    employeeDetails: invoiceData?.employeeDetails,
+                    employeeName: invoiceData?.employeeDetails?.employeeName,
+                    status: invoiceData?.status,
+                    subtotal: invoiceData?.subtotal,
+                    discount: invoiceData?.discount,
+                    total: invoiceData?.total,
+                    productDetails: invoiceData?.productDetails,
+                    customerDetails: invoiceData?.customerDetails,
+                    vatAmount: invoiceData?.vatAmount,
+                    totalItems: invoiceData?.totalItems,
+                    totalQty: invoiceData?.totalQty,
+                    transactionType: invoiceData?.vatAmount ? "Invoice" : "Quotation",
+                    invoiceAmount: invoiceData?.subtotal,
+                    invoiceType: "Sale Invoice",
+                    paymentMethod: paymentMethod,
+                    paid: invoiceData?.subtotal,
+                    toPay: 0,
+                    invoiceNumber: invoiceData?.invoiceNumber,
+                    invoiceBarcodeNumber: invoiceData?.barcodeNumber,
+                    referenceId: referenceId,
+                    transactionId: transactionId,
+                    cheque_no: chequeNo,
+                    bank_name: bankName,
+                    clear_date: clearDate,
+                    creditDays: creditDays,
+                }
+
+                let updatedCustomerLedger = await CustomerLedgerModel.findOneAndUpdate(
+                    { invoiceNumber: invoiceData?.invoiceNumber, status: "Sale" }, // Query to find the document
+                    customerLedger, // New data to replace with existing document
+                    { new: true, upsert: true } // Options: "new" to return the modified document, "upsert" to create a new document if it doesn't exist
+                );
+
+
+                invoiceData.paymentMethod = paymentMethod
+                invoiceData.referenceId = referenceId
+                invoiceData.transactionId = transactionId
+                invoiceData.creditDays = creditDays
+                invoiceData.cheque_no = chequeNo
+                invoiceData.bank_name = bankName
+                invoiceData.clear_date = clearDate
+
+
+                InvoiceModel.findByIdAndUpdate(invoiceData?._id, invoiceData).then((updatedData) => {
+
+                    if (!updatedData) {
+
+                        res.json({
+                            message: "Internal Server Error",
+                            status: false
+                        })
+                        return
+                    }
+
+                    res.json({
+                        message: "Payment Method Successfully Updated",
+                        status: true,
+                        data: invoiceData
+                    })
+
+
+                }).catch((error) => {
+
+                    res.json({
+                        message: "Internal Server Error",
+                        status: false,
+                        error: error?.message
+                    })
+
+                })
+
+
+
+
+            }
+            else if (paymentMethod.toLowerCase() == "card" || paymentMethod.toLowerCase() == "online") {
+
+
+                let invoiceAmount = invoiceData?.subtotal
+                let customerId = invoiceData?.customerDetails[0]?.id
+                let customerUpdate = await CustomerModel.findById(customerId)
+
+                if (invoiceData?.vatAmount) {
+                    customerUpdate.credit_balance -= invoiceAmount
+                } else {
+                    customerUpdate.quotation_balance -= invoiceAmount
+                }
+
+                customerUpdate.save()
+
+                let customerLedger = {
+
+                    date: invoiceData?.saleDate,
+                    customerId: invoiceData?.customerDetails?.id,
+                    employeeDetails: invoiceData?.employeeDetails,
+                    employeeName: invoiceData?.employeeDetails?.employeeName,
+                    status: invoiceData?.status,
+                    subtotal: invoiceData?.subtotal,
+                    discount: invoiceData?.discount,
+                    total: invoiceData?.total,
+                    productDetails: invoiceData?.productDetails,
+                    customerDetails: invoiceData?.customerDetails,
+                    vatAmount: invoiceData?.vatAmount,
+                    totalItems: invoiceData?.totalItems,
+                    totalQty: invoiceData?.totalQty,
+                    transactionType: invoiceData?.vatAmount ? "Invoice" : "Quotation",
+                    invoiceAmount: invoiceData?.subtotal,
+                    invoiceType: "Sale Invoice",
+                    paymentMethod: paymentMethod,
+                    paid: invoiceData?.subtotal,
+                    toPay: 0,
+                    invoiceNumber: invoiceData?.invoiceNumber,
+                    invoiceBarcodeNumber: invoiceData?.barcodeNumber,
+                    referenceId: referenceId,
+                    transactionId: transactionId,
+                    cheque_no: chequeNo,
+                    bank_name: bankName,
+                    clear_date: clearDate,
+                    creditDays: creditDays,
+                }
+
+                let updatedCustomerLedger = await CustomerLedgerModel.findOneAndUpdate(
+                    { invoiceNumber: invoiceData?.invoiceNumber, status: "Sale" }, // Query to find the document
+                    customerLedger, // New data to replace with existing document
+                    { new: true, upsert: true } // Options: "new" to return the modified document, "upsert" to create a new document if it doesn't exist
+                );
+
+
+                invoiceData.paymentMethod = paymentMethod
+                invoiceData.referenceId = referenceId
+                invoiceData.transactionId = transactionId
+                invoiceData.creditDays = creditDays
+                invoiceData.cheque_no = chequeNo
+                invoiceData.bank_name = bankName
+                invoiceData.clear_date = clearDate
+
+
+                InvoiceModel.findByIdAndUpdate(invoiceData?._id, invoiceData).then((updatedData) => {
+
+                    if (!updatedData) {
+
+                        res.json({
+                            message: "Internal Server Error",
+                            status: false
+                        })
+                        return
+                    }
+
+                    res.json({
+                        message: "Payment Method Successfully Updated",
+                        status: true,
+                        data: invoiceData
+                    })
+
+
+                }).catch((error) => {
+
+                    res.json({
+                        message: "Internal Server Error",
+                        status: false,
+                        error: error?.message
+                    })
+
+                })
+
+
+
+
+            }
+
+            else if (paymentMethod.toLowerCase() == "cheque" || paymentMethod.toLowerCase() == "credit") {
+
+
+                let customerLedger = {
+
+                    date: invoiceData?.saleDate,
+                    customerId: invoiceData?.customerDetails?.id,
+                    employeeDetails: invoiceData?.employeeDetails,
+                    employeeName: invoiceData?.employeeDetails?.employeeName,
+                    status: invoiceData?.status,
+                    subtotal: invoiceData?.subtotal,
+                    discount: invoiceData?.discount,
+                    total: invoiceData?.total,
+                    productDetails: invoiceData?.productDetails,
+                    customerDetails: invoiceData?.customerDetails,
+                    vatAmount: invoiceData?.vatAmount,
+                    totalItems: invoiceData?.totalItems,
+                    totalQty: invoiceData?.totalQty,
+                    transactionType: invoiceData?.vatAmount ? "Invoice" : "Quotation",
+                    invoiceAmount: invoiceData?.subtotal,
+                    invoiceType: "Sale Invoice",
+                    paymentMethod: paymentMethod,
+                    paid: 0,
+                    toPay: invoiceData?.subtotal,
+                    invoiceNumber: invoiceData?.invoiceNumber,
+                    invoiceBarcodeNumber: invoiceData?.barcodeNumber,
+                    referenceId: referenceId,
+                    transactionId: transactionId,
+                    cheque_no: chequeNo,
+                    bank_name: bankName,
+                    clear_date: clearDate,
+                    creditDays: creditDays,
+                }
+
+                let updatedCustomerLedger = await CustomerLedgerModel.findOneAndUpdate(
+                    { invoiceNumber: invoiceData?.invoiceNumber, status: "Sale" }, // Query to find the document
+                    customerLedger, // New data to replace with existing document
+                    { new: true, upsert: true } // Options: "new" to return the modified document, "upsert" to create a new document if it doesn't exist
+                );
+
+
+                invoiceData.paymentMethod = paymentMethod
+                invoiceData.referenceId = referenceId
+                invoiceData.transactionId = transactionId
+                invoiceData.creditDays = creditDays
+                invoiceData.cheque_no = chequeNo
+                invoiceData.bank_name = bankName
+                invoiceData.clear_date = clearDate
+
+
+                InvoiceModel.findByIdAndUpdate(invoiceData?._id, invoiceData).then((updatedData) => {
+
+                    if (!updatedData) {
+
+                        res.json({
+                            message: "Internal Server Error",
+                            status: false
+                        })
+                        return
+                    }
+
+                    res.json({
+                        message: "Payment Method Successfully Updated",
+                        status: true,
+                        data: invoiceData
+                    })
+
+
+                }).catch((error) => {
+
+                    res.json({
+                        message: "Internal Server Error",
+                        status: false,
+                        error: error?.message
+                    })
+
+                })
+
+
+
+
+            }
+
+
+
+        }
 
     }
 

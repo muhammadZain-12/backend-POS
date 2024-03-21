@@ -196,6 +196,87 @@ const DepartmentController = {
                 error: error
             });
         }
+    },
+    editDepartment: async (req, res) => {
+
+        let { editedName, department } = req.body
+
+        if (!editedName || !department) {
+            res.json({
+                message: "Required Fields are missing",
+                status: false
+            })
+            return
+        }
+
+        let newDepartment = { ...department }
+
+        newDepartment.departmentName = editedName
+
+
+        DepartmentModel.findByIdAndUpdate(department?._id, newDepartment).then((data) => {
+
+            if (!data) {
+
+                res.json({
+                    message: "Internal Server Error",
+                    status: false
+                })
+                return
+            }
+
+            res.json({
+                message: "Department Successfully Edited",
+                status: true,
+                data: newDepartment
+            })
+
+        }).catch((error) => {
+
+            res.json({
+                message: "Internal Server Error",
+                status: false,
+                data: error?.message
+            })
+
+        })
+
+
+
+    },
+    editCategory: async (req, res) => {
+
+        let departmentToEdit = req.body
+
+        DepartmentModel.findByIdAndUpdate(departmentToEdit?._id, departmentToEdit).then((data) => {
+
+            if (!data) {
+
+                res.json({
+                    message: "Internal Server Error",
+                    status: false
+                })
+                return
+            }
+
+            res.json({
+                message: "Category Successfully Edited",
+                status: true,
+                data: departmentToEdit
+            })
+
+        }).catch((error) => {
+
+            res.json({
+                message: "Internal Server Error",
+                status: false,
+                data: error?.message
+            })
+
+        })
+
+
+
     }
 
 

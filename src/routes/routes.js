@@ -119,7 +119,11 @@ router.get("/api/getCustomers", authenticateMiddleware, CustomerController.get)
 router.put("/api/updateCustomer", authenticateMiddleware, checkRole, CustomerController.put)
 router.delete("/api/deleteCustomer/:id", authenticateMiddleware, checkRole, CustomerController.delete)
 router.post("/api/sendEmailToCustomer", authenticateMiddleware, EmailController.post)
+
 router.post("/api/createInvoice", authenticateMiddleware, InvoiceController.post)
+router.put("/api/changePaymentMethod", authenticateMiddleware, InvoiceController.changePaymentMethod)
+
+
 router.post("/api/pdfSendToCustomer", authenticateMiddleware, EmailController.sendPdf)
 
 
@@ -172,12 +176,19 @@ router.post("/api/addDamageProductsInTrash", authenticateMiddleware, checkRole, 
 
 
 router.post("/api/addProductDepartment", authenticateMiddleware, checkRole, DepartmentController.addDepartment)
+router.put("/api/editProductDepartment", authenticateMiddleware, checkRole, DepartmentController.editDepartment)
+router.put("/api/editProductCategory", authenticateMiddleware, checkRole, DepartmentController.editCategory)
+
+
+
 router.get("/api/getProductDepartment", authenticateMiddleware, checkRole, DepartmentController.getDepartment)
 router.post("/api/addProductCategory", DepartmentController.addCategory)
 router.post("/api/addProductSubcategory", authenticateMiddleware, checkRole, DepartmentController.addSubcategory)
 router.post("/api/addProductMake", authenticateMiddleware, checkRole, makeController.addMake)
 router.get("/api/getProductMake", authenticateMiddleware, checkRole, makeController.getMake)
 router.post("/api/addProductModel", authenticateMiddleware, checkRole, makeController.addModel)
+router.put("/api/editProductMake", authenticateMiddleware, checkRole, makeController.editMake)
+router.put("/api/editProductModel", authenticateMiddleware, checkRole, makeController.editModel)
 
 
 router.post("/api/createExchangeInvoice", authenticateMiddleware, exchangeController.post)
@@ -217,10 +228,10 @@ router.put("/api/updateChequeStatus", authenticateMiddleware, checkRole, Custome
 router.put("/api/refundBalance", authenticateMiddleware, checkRole, CustomerController.refundBalance)
 
 
-router.get("/api/getCustomerLedger/:id",CustomerLedgerController.getCustomerLedger)
+router.get("/api/getCustomerLedger/:id", CustomerLedgerController.getCustomerLedger)
 
 
-router.get("/api/getProductLedger/:barcode",ProductLedgerController.getProductLedger)
+router.get("/api/getProductLedger/:barcode", ProductLedgerController.getProductLedger)
 
 
 

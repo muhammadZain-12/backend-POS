@@ -108,7 +108,7 @@ const makeController = {
             }
 
             // Add the category to the department
-            selectedMake.model.push({model});
+            selectedMake.model.push({ model });
 
             // Save the updated department
             const updatedMake = await selectedMake.save();
@@ -127,6 +127,87 @@ const makeController = {
             });
         }
     },
+    editMake: async (req, res) => {
+
+        let { editedName, make } = req.body
+
+        if (!editedName || !make) {
+            res.json({
+                message: "Required Fields are missing",
+                status: false
+            })
+            return
+        }
+
+        let newMake = { ...make }
+
+        newMake.make = editedName
+
+
+        MakeModel.findByIdAndUpdate(make?._id, newMake).then((data) => {
+
+            if (!data) {
+
+                res.json({
+                    message: "Internal Server Error",
+                    status: false
+                })
+                return
+            }
+
+            res.json({
+                message: "Make Successfully Edited",
+                status: true,
+                data: newMake
+            })
+
+        }).catch((error) => {
+
+            res.json({
+                message: "Internal Server Error",
+                status: false,
+                data: error?.message
+            })
+
+        })
+
+
+
+    },
+    editModel: async (req, res) => {
+
+        let MakeToEdit = req.body
+
+        MakeModel.findByIdAndUpdate(MakeToEdit?._id, MakeToEdit).then((data) => {
+
+            if (!data) {
+
+                res.json({
+                    message: "Internal Server Error",
+                    status: false
+                })
+                return
+            }
+
+            res.json({
+                message: "Make Successfully Edited",
+                status: true,
+                data: MakeToEdit
+            })
+
+        }).catch((error) => {
+
+            res.json({
+                message: "Internal Server Error",
+                status: false,
+                data: error?.message
+            })
+
+        })
+
+
+
+    }
 
 }
 
