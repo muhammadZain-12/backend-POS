@@ -531,7 +531,6 @@ const InvoiceController = {
                     { new: true, upsert: true } // Options: "new" to return the modified document, "upsert" to create a new document if it doesn't exist
                 );
 
-
                 invoiceData.paymentMethod = paymentMethod
                 invoiceData.referenceId = referenceId
                 invoiceData.transactionId = transactionId
