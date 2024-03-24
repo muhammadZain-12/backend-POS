@@ -1,10 +1,13 @@
 const nodemailer = require("nodemailer")
 const dotenv = require("dotenv")
 const emailModel = require("../models/emailsSchema")
-const pdf = require('html-pdf');
+// const pdf = require('html-pdf');
 const fs = require('fs');
 const path = require("path");
 const vatModel = require("../models/VATSchema");
+const puppeteer = require('puppeteer');
+
+
 
 dotenv.config()
 let appPassword = process.env.appPassword
@@ -17,36 +20,31 @@ let appPassword = process.env.appPassword
 const generatePdf = async (printInvoiceData) => {
   return new Promise(async (resolve, reject) => {
 
+    try {
+      let vat = await vatModel.find({})
 
-    let vat = await vatModel.find({})
-
-    vat = vat?.[0]
-
-
-    const barcodeImagePath = path.join(__dirname, `../products/${printInvoiceData?.barcodeImagePath}`);
-    const imageSrc = `data:image/jpeg;base64,${fs.readFileSync(barcodeImagePath, { encoding: 'base64' })}`;
+      vat = vat?.[0]
 
 
-    const content = `
+      const barcodeImagePath = path.join(__dirname, `../products/${printInvoiceData?.barcodeImagePath}`);
+      const imageSrc = `data:image/jpeg;base64,${fs.readFileSync(barcodeImagePath, { encoding: 'base64' })}`;
+
+      const content = `
         <div
         class="container"
         style="
           width: 900px;
-          display: flex;
-          
-          justify-content: ${printInvoiceData.vatAmount ? `space-between` : `flex-end`}; /* Changed to space-between */
-          flex-direction: row;
           margin-right: 10px; /* Added margin to the right */
         "
     >
 
 
-    <Table>
+    <table>
         
     <tr style="width:900px;" >
     <td style="width:450px;" >
     ${printInvoiceData?.vatAmount
-        ? `
+          ? `
   <div style="width:450px;display:inline;margin-top:0px" >
     <h1>${vat?.companyName}</h1>
     <p>${vat?.companyAddress}
@@ -60,33 +58,33 @@ const generatePdf = async (printInvoiceData) => {
   </div>
 
     ${printInvoiceData?.vatAmount &&
-        `<div >
+          `<div >
         ${vat?.vatNumber
-          ? `<p>Vat Number: ${vat?.vatNumber}
+            ? `<p>Vat Number: ${vat?.vatNumber}
             </br>
             Company Number: ${vat?.companyNumber}
             </p>`
-          : ""
-        }
+            : ""
+          }
         
       </div>`
-        }
+          }
 
   </div>
 
 
   
   `
-        : ""
-      }
+          : ""
+        }
     
     
     
     </td>
-    <td style="width:450px;" >
+    <td style="width:450px;margin-right:10px" >
     
             
-    <div style="text-align: right;width:450px;" >
+    <div style="text-align: right;width:450px;margin-right:10px;" >
     
     <div>
 
@@ -101,18 +99,18 @@ const generatePdf = async (printInvoiceData) => {
         ${printInvoiceData?.vatAmount ? `<p>Invoice #: ${printInvoiceData?.invoiceNumber}` : ""}
         </br>
             Date: ${printInvoiceData.saleDate ? new Date(
-        printInvoiceData.saleDate
-      ).toLocaleDateString() : printInvoiceData.saleReturnDate ? new Date(
-        printInvoiceData.saleReturnDate
-      ).toLocaleDateString() : new Date(
-        printInvoiceData.exchangeDate
-      ).toLocaleDateString()}</br>
+          printInvoiceData.saleDate
+        ).toLocaleDateString() : printInvoiceData.saleReturnDate ? new Date(
+          printInvoiceData.saleReturnDate
+        ).toLocaleDateString() : new Date(
+          printInvoiceData.exchangeDate
+        ).toLocaleDateString()}</br>
             Time: ${printInvoiceData.saleDate ? new Date(
-        printInvoiceData.saleDate
-      ).toLocaleTimeString() : printInvoiceData.saleReturnDate ? new Date(
-        printInvoiceData.saleReturnDate
-      ).toLocaleTimeString() : new Date(
-        printInvoiceData.exchangeDate).toLocaleTimeString()}</p>
+          printInvoiceData.saleDate
+        ).toLocaleTimeString() : printInvoiceData.saleReturnDate ? new Date(
+          printInvoiceData.saleReturnDate
+        ).toLocaleTimeString() : new Date(
+          printInvoiceData.exchangeDate).toLocaleTimeString()}</p>
         </div>
 
               ${printInvoiceData?.vatAmount ? `
@@ -123,10 +121,10 @@ const generatePdf = async (printInvoiceData) => {
 
               ${printInvoiceData?.vatAmount ?
 
-        `Business Name: ${printInvoiceData?.customerDetails[0]?.businessName}</br>
+          `Business Name: ${printInvoiceData?.customerDetails[0]?.businessName}</br>
           Customer Email: ${printInvoiceData?.customerDetails[0]?.email}
           </p>` : ""
-      }
+        }
 
   
   ${printInvoiceData?.vatAmount ? `Payment Method: ${printInvoiceData?.paymentMethod}` : ""}
@@ -135,27 +133,27 @@ const generatePdf = async (printInvoiceData) => {
     </div>
 
     ${printInvoiceData.status
-        ? `<p>Status: ${printInvoiceData?.status}</p>`
-        : ""
-      }
+          ? `<p>Status: ${printInvoiceData?.status}</p>`
+          : ""
+        }
 
     ${printInvoiceData.referenceId
-        ? `<p>Reference Id: ${printInvoiceData.referenceId}</p>`
-        : ""
-      }
+          ? `<p>Reference Id: ${printInvoiceData.referenceId}</p>`
+          : ""
+        }
     ${printInvoiceData.transactionId
-        ? `<p>Transaction Id: ${printInvoiceData.transactionId}</p>`
-        : ""
-      }
+          ? `<p>Transaction Id: ${printInvoiceData.transactionId}</p>`
+          : ""
+        }
     ${printInvoiceData?.paymentMethod?.toLowerCase() == "cheque"
-        ? `<p>Cheque No: ${printInvoiceData.cheque_no}</br>
+          ? `<p>Cheque No: ${printInvoiceData.cheque_no}</br>
           Bank Name: ${printInvoiceData.bank_name}</br>
           Cheque Date: ${new Date(
-          printInvoiceData.clear_date
-        ).toLocaleDateString()}</p>
+            printInvoiceData.clear_date
+          ).toLocaleDateString()}</p>
           `
-        : ""
-      }
+          : ""
+        }
 </div>
 
 
@@ -164,11 +162,9 @@ const generatePdf = async (printInvoiceData) => {
     </td>
     </tr>
     
-    </Table>
-
-            
-
-    <table style="margin-top:10px;border-collapse: collapse;" >
+    </table>
+          
+    <table style="margin-top:10px;border-collapse: collapse;margin-right:10px;" >
                   <thead style="background-color:lightGray;" >
                   <tr style="background-color:lightGray;" >
                  <th
@@ -263,10 +259,10 @@ const generatePdf = async (printInvoiceData) => {
                 </thead>
             
                     ${printInvoiceData.productDetails &&
-      printInvoiceData.productDetails.length > 0 &&
-      printInvoiceData.productDetails.map(
-        (e, i) =>
-          `<tbody>
+        printInvoiceData.productDetails.length > 0 &&
+        printInvoiceData.productDetails.map(
+          (e, i) =>
+            `<tbody>
                       <tr>
                       
                       
@@ -340,12 +336,12 @@ const generatePdf = async (printInvoiceData) => {
                         "
                         >
                         £${printInvoiceData?.saleReturnDate ? "-" : ""}${printInvoiceData?.customerDetails[0]?.priceLevel[0]?.id == 1
-            ? e.trade_price
-            : printInvoiceData?.customerDetails[0]?.priceLevel[0]?.id ==
-              2
-              ? e.warehouse_price
-              : e.retail_price
-          }
+              ? e.trade_price
+              : printInvoiceData?.customerDetails[0]?.priceLevel[0]?.id ==
+                2
+                ? e.warehouse_price
+                : e.retail_price
+            }
                         </td>
             
                         <td
@@ -360,15 +356,15 @@ const generatePdf = async (printInvoiceData) => {
                         "
                         >
                         £${e.discountPrice
-            ? (printInvoiceData?.customerDetails[0]?.priceLevel[0]
-              ?.id == 1
-              ? e.trade_price
-              : printInvoiceData?.customerDetails[0]?.priceLevel[0]
-                ?.id == 2
-                ? e.warehouse_price
-                : e.retail_price) - e.discountPrice
-            : 0
-          }
+              ? (printInvoiceData?.customerDetails[0]?.priceLevel[0]
+                ?.id == 1
+                ? e.trade_price
+                : printInvoiceData?.customerDetails[0]?.priceLevel[0]
+                  ?.id == 2
+                  ? e.warehouse_price
+                  : e.retail_price) - e.discountPrice
+              : 0
+            }
                         </td>
             
                         <td
@@ -383,26 +379,26 @@ const generatePdf = async (printInvoiceData) => {
                         "
                         >
                         £${printInvoiceData?.saleReturnDate ? "-" : ""}${e.discountPrice
-            ? e.discountPrice * (e?.DamageQty ? e?.DamageQty : e.saleQty)
-            : (printInvoiceData?.customerDetails[0]?.priceLevel[0]
-              ?.id == 1
-              ? e.trade_price
-              : printInvoiceData?.customerDetails[0]?.priceLevel[0]
-                ?.id == 2
-                ? e.warehouse_price
-                : e.retail_price) * (e?.DamageQty ? e?.DamageQty : e.saleQty)
-          }
+              ? e.discountPrice * (e?.DamageQty ? e?.DamageQty : e.saleQty)
+              : (printInvoiceData?.customerDetails[0]?.priceLevel[0]
+                ?.id == 1
+                ? e.trade_price
+                : printInvoiceData?.customerDetails[0]?.priceLevel[0]
+                  ?.id == 2
+                  ? e.warehouse_price
+                  : e.retail_price) * (e?.DamageQty ? e?.DamageQty : e.saleQty)
+            }
                         </td>
                       </tr>
                     </tbody>`
-      )}
+        )}
     
     
           ${printInvoiceData.returnProductDetails &&
-      printInvoiceData.returnProductDetails.length > 0 &&
-      printInvoiceData.returnProductDetails.map(
-        (e, i) =>
-          `<tbody>
+        printInvoiceData.returnProductDetails.length > 0 &&
+        printInvoiceData.returnProductDetails.map(
+          (e, i) =>
+            `<tbody>
                         <tr>
                         
                         
@@ -476,12 +472,12 @@ const generatePdf = async (printInvoiceData) => {
                           "
                           >
                           £${printInvoiceData?.exchangeDate ? "-" : ""}${printInvoiceData?.customerDetails[0]?.priceLevel[0]?.id == 1
-            ? e.trade_price
-            : printInvoiceData?.customerDetails[0]?.priceLevel[0]?.id ==
-              2
-              ? e.warehouse_price
-              : e.retail_price
-          }
+              ? e.trade_price
+              : printInvoiceData?.customerDetails[0]?.priceLevel[0]?.id ==
+                2
+                ? e.warehouse_price
+                : e.retail_price
+            }
                           </td>
               
                           <td
@@ -496,15 +492,15 @@ const generatePdf = async (printInvoiceData) => {
                           "
                           >
                           £${e.discountPrice
-            ? (printInvoiceData?.customerDetails[0]?.priceLevel[0]
-              ?.id == 1
-              ? e.trade_price
-              : printInvoiceData?.customerDetails[0]?.priceLevel[0]
-                ?.id == 2
-                ? e.warehouse_price
-                : e.retail_price) - e.discountPrice
-            : 0
-          }
+              ? (printInvoiceData?.customerDetails[0]?.priceLevel[0]
+                ?.id == 1
+                ? e.trade_price
+                : printInvoiceData?.customerDetails[0]?.priceLevel[0]
+                  ?.id == 2
+                  ? e.warehouse_price
+                  : e.retail_price) - e.discountPrice
+              : 0
+            }
                           </td>
               
                           <td
@@ -519,19 +515,19 @@ const generatePdf = async (printInvoiceData) => {
                           "
                           >
                           £${printInvoiceData?.exchangeDate ? "-" : ""}${e.discountPrice
-            ? e.discountPrice * (e?.DamageQty ? e?.DamageQty : e.saleQty)
-            : (printInvoiceData?.customerDetails[0]?.priceLevel[0]
-              ?.id == 1
-              ? e.trade_price
-              : printInvoiceData?.customerDetails[0]?.priceLevel[0]
-                ?.id == 2
-                ? e.warehouse_price
-                : e.retail_price) * (e?.DamageQty ? e?.DamageQty : e.saleQty)
-          }
+              ? e.discountPrice * (e?.DamageQty ? e?.DamageQty : e.saleQty)
+              : (printInvoiceData?.customerDetails[0]?.priceLevel[0]
+                ?.id == 1
+                ? e.trade_price
+                : printInvoiceData?.customerDetails[0]?.priceLevel[0]
+                  ?.id == 2
+                  ? e.warehouse_price
+                  : e.retail_price) * (e?.DamageQty ? e?.DamageQty : e.saleQty)
+            }
                           </td>
                         </tr>
                       </tbody>`
-      )}
+        )}
                     
     
     
@@ -638,14 +634,14 @@ const generatePdf = async (printInvoiceData) => {
                       "
                         >
                         £${printInvoiceData?.saleReturnDate ? "-" : ""}${printInvoiceData.vatAmount
-        ? printInvoiceData.total - printInvoiceData.discount
-        : printInvoiceData.subtotal
-      }
+          ? printInvoiceData.total - printInvoiceData.discount
+          : printInvoiceData.subtotal
+        }
                         </td>
                       </tr>
             
                       ${printInvoiceData.vatAmount
-        ? `
+          ? `
                       <tr>
                         <td
                           colspan="6"
@@ -671,8 +667,8 @@ const generatePdf = async (printInvoiceData) => {
                         £${printInvoiceData?.saleReturnDate ? "-" : ""}${printInvoiceData.vatAmount}
                         </td>
                       </tr>`
-        : ""
-      }
+          : ""
+        }
             
                       <tr>
                         <td
@@ -708,27 +704,41 @@ const generatePdf = async (printInvoiceData) => {
                 </div>
             `;
 
-    const options = {
-      format: 'Letter',
-      orientation: 'portrait',
-      border: {
-        top: '1cm',
-        right: '1cm',
-        bottom: '1cm',
-        left: '1cm'
-      }
-    };
 
-    const pdfPath = path.join(__dirname, '../PDF/') + `invoice#${printInvoiceData.invoiceNumber}.pdf`
+      const pdfPath = path.join(__dirname, '../PDF/') + `invoice#${printInvoiceData.invoiceNumber}.pdf`
+      const browser = await puppeteer.launch();
+      const page = await browser.newPage();
+      await page.setContent(content);
+      await page.pdf({ path: pdfPath, format: 'A4' });
+      await browser.close();
+      resolve(pdfPath);
 
-    pdf.create(content, options).toFile(pdfPath, (err, res) => {
-      if (err) {
-        reject(err);
-      } else {
-        console.log("PDF generated successfully:", res.filename);
-        resolve(res.filename);
-      }
-    });
+    } catch (error) {
+
+      reject(error)
+    }
+
+    // const options = {
+    //   format: 'A4',
+    //   orientation: 'portrait',
+    //   border: {
+    //     top: '1cm',
+    //     right: '1cm',
+    //     bottom: '1cm',
+    //     left: '1cm'
+    //   }
+    // };
+
+    // const pdfPath = path.join(__dirname, '../PDF/') + `invoice#${printInvoiceData.invoiceNumber}.pdf`
+
+    // pdf.create(content, options).toFile(pdfPath, (err, res) => {
+    //   if (err) {
+    //     reject(err);
+    //   } else {
+    //     console.log("PDF generated successfully:", res.filename);
+    //     resolve(res.filename);
+    //   }
+    // });
   });
 };
 

@@ -19,7 +19,6 @@ app.use('/src/products', express.static(path.join(__dirname, 'src/products')));
 let PORT = process.env.PORT || 6000
 const Base_Uri = process.env.MONGO_URL
 
-
 app.listen(PORT, () => console.log(`App running on localhost:${PORT}`))
 
 mongoose.connect(Base_Uri).then((success) => {
