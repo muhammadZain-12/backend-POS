@@ -22,9 +22,7 @@ const generatePdf = async (printInvoiceData) => {
 
     try {
       let vat = await vatModel.find({})
-
       vat = vat?.[0]
-
 
       const barcodeImagePath = path.join(__dirname, `../products/${printInvoiceData?.barcodeImagePath}`);
       const imageSrc = `data:image/jpeg;base64,${fs.readFileSync(barcodeImagePath, { encoding: 'base64' })}`;
@@ -706,7 +704,7 @@ const generatePdf = async (printInvoiceData) => {
 
 
       const pdfPath = path.join(__dirname, '../PDF/') + `invoice#${printInvoiceData.invoiceNumber}.pdf`
-      const browser = await puppeteer.launch();
+      const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox']});
       const page = await browser.newPage();
       await page.setContent(content);
       await page.pdf({ path: pdfPath, format: 'A4' });
@@ -714,6 +712,8 @@ const generatePdf = async (printInvoiceData) => {
       resolve(pdfPath);
 
     } catch (error) {
+
+      console.log(error, "error")
 
       reject(error)
     }
@@ -897,12 +897,7 @@ const EmailController = {
   sendPdf: async (req, res) => {
     let { printInvoiceData } = req.body;
 
-    console.log(printInvoiceData, "printInvoiceData")
-
-    // Generate PDF
     generatePdf(printInvoiceData).then((pdfPath) => {
-      // Send email with PDF attachment
-      console.log(pdfPath, "dfPath")
 
       sendEmailWithAttachment(printInvoiceData, pdfPath, res);
     }).catch((error) => {
@@ -910,7 +905,6 @@ const EmailController = {
       res.status(500).json({ message: "Error generating PDF", error: error });
     });
   }
-
 
 
 }
