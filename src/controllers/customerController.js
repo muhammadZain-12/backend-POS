@@ -53,6 +53,17 @@ const CustomerController = {
         let data = req.body
 
 
+        let { customerName, businessName, accountNo, email, mobileNumber, creditLimits, creditDays } = data
+
+        if (!customerName || !businessName || !accountNo || !mobileNumber || !creditLimits || !creditDays) {
+            res.json({
+                message: "Required Fields are missing",
+                status: false
+            })
+            return
+        }
+
+
         let dataToSend = {
 
             customer_name: data.customerName,
@@ -70,8 +81,8 @@ const CustomerController = {
             order_location: data.orderLocation,
             credit_limits: data.creditLimits,
             credit_days: data.creditDays,
-            credit_balance: data?.creditBalance,
-            quotation_balance: data?.quotationBalance,
+            credit_balance: data?.creditBalance ? data?.creditBalance : 0,
+            quotation_balance: data?.quotationBalance ? data?.quotationBalance : 0,
             discount: data.discount,
             price_level: data.priceLevel,
         }
@@ -90,13 +101,13 @@ const CustomerController = {
 
 
 
-                console.log(data,"dataaaa")
-
                 let customerLedger = {
 
                     date: new Date(),
                     customerId: data?._id,
-                    toPay: Number(Number(data?.quotation_balance ||0) + Number(data?.credit_balance || 0)).toFixed(2),
+                    openingquotationBalance: data?.quotation_balance ? Number(data?.quotation_balance) : 0,
+                    openinginvoiceBalance: data?.credit_balance ? Number(data?.credit_balance) : 0,
+                    toPay: Number(Number(data?.quotation_balance || 0) + Number(data?.credit_balance || 0)).toFixed(2),
                     transactionType: "Opening Balance"
                 }
 

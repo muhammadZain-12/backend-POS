@@ -48,7 +48,6 @@ const productSchema = mongoose.Schema({
     },
     sub_category: {
         type: String,
-        required: true
     },
     make: {
         type: String,

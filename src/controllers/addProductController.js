@@ -83,7 +83,7 @@ const AddProductController = {
         } = req.body
 
 
-        if (!ProductName || !department || !category || !Sub_Category || !make || !model || !barCode || !cost_price || !trade_price || !retail_price || !warehouse_price) {
+        if (!ProductName || !department || !category || !make || !model || !barCode || !cost_price || !trade_price || !retail_price || !warehouse_price) {
 
 
             res.json({

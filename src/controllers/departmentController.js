@@ -1,4 +1,5 @@
 const DepartmentModel = require("../models/productDepartmentModal")
+const productModel = require("../models/productSchema")
 
 
 
@@ -201,6 +202,11 @@ const DepartmentController = {
 
         let { editedName, department } = req.body
 
+        let oldDepartmentName = department?.departmentName
+
+
+        console.log(oldDepartmentName, "oldDepartmentName")
+
         if (!editedName || !department) {
             res.json({
                 message: "Required Fields are missing",
@@ -225,11 +231,28 @@ const DepartmentController = {
                 return
             }
 
-            res.json({
-                message: "Department Successfully Edited",
-                status: true,
-                data: newDepartment
-            })
+            productModel.updateMany(
+                { department: oldDepartmentName }, // Filter to match documents with oldDepartmentName
+                { $set: { department: newDepartment?.departmentName } } // Update department to newDepartment
+            ).then((result) => {
+
+
+                   res.json({
+                        message: "Department Successfully Edited",
+                        status: true,
+                        data: newDepartment
+                    });
+                
+            }).catch((error) => {
+                // Internal server error
+                res.json({
+                    message: "Internal Server Error",
+                    status: false
+                });
+            });
+
+
+
 
         }).catch((error) => {
 
@@ -259,13 +282,77 @@ const DepartmentController = {
                 return
             }
 
-            res.json({
-                message: "Category Successfully Edited",
-                status: true,
-                data: departmentToEdit
-            })
+
+
+            if (departmentToEdit?.oldCategoryName) {
+
+                productModel.updateMany(
+                    { category: departmentToEdit?.oldCategoryName }, // Filter to match documents with oldDepartmentName
+                    { $set: { category: departmentToEdit?.newCategoryName } }
+
+
+                    // Update department to newDepartment
+                ).then((result) => {
+
+                       res.json({
+                            message: "Category Successfully Edited",
+                            status: true,
+                            data: departmentToEdit
+                        })
+                    
+                }).catch((error) => {
+                    // Internal server error
+                    res.json({
+                        message: "Internal Server Error",
+                        status: false
+                    });
+                });
+
+                return
+            }
+
+            if (departmentToEdit?.oldSubcategoryName) {
+
+
+                productModel.updateMany(
+                    { sub_category: departmentToEdit?.oldSubcategoryName }, // Filter to match documents with oldDepartmentName
+                    { $set: { sub_category: departmentToEdit?.newSubcategoryName } }
+
+
+
+                    // Update department to newDepartment
+                ).then((result) => {
+
+                    console.log(result,'result')
+
+                       res.json({
+                            message: "Subcategory Successfully Edited",
+                            status: true,
+                            data: departmentToEdit
+                        })
+                    
+                }).catch((error) => {
+                    // Internal server error
+                    res.json({
+                        message: "Internal Server Error",
+                        status: false
+                    });
+                });
+
+
+
+            }
+
+
+
+
+
+
 
         }).catch((error) => {
+
+
+
 
             res.json({
                 message: "Internal Server Error",

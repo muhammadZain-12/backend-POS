@@ -68,10 +68,12 @@ const CustomerSchema = mongoose.Schema({
         // Set the default value to the current timestamp when a document is created
     },
     credit_limits: {
-        type: Number
+        type: Number,
+        required : true
     },
     credit_days: {
-        type: Number
+        type: Number,
+        required : true
     },
 
     price_level: {

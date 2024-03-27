@@ -1,4 +1,5 @@
 const MakeModel = require("./makeSchema")
+const productModel = require("./productSchema")
 
 
 
@@ -141,6 +142,7 @@ const makeController = {
 
         let newMake = { ...make }
 
+        newMake.oldName = newMake?.make
         newMake.make = editedName
 
 
@@ -155,11 +157,26 @@ const makeController = {
                 return
             }
 
-            res.json({
-                message: "Make Successfully Edited",
-                status: true,
-                data: newMake
-            })
+
+            productModel.updateMany(
+                { make: newMake?.oldName }, // Filter to match documents with oldDepartmentName
+                { $set: { make: newMake?.make } }
+
+            ).then((result) => {
+
+                res.json({
+                    message: "Make Successfully Edited",
+                    status: true,
+                    data: newMake
+                })
+            }).catch((error) => {
+                // Internal server error
+                res.json({
+                    message: "Internal Server Error",
+                    status: false
+                });
+            });
+
 
         }).catch((error) => {
 
@@ -178,6 +195,9 @@ const makeController = {
 
         let MakeToEdit = req.body
 
+
+        console.log(MakeToEdit,"maleToEdit")
+
         MakeModel.findByIdAndUpdate(MakeToEdit?._id, MakeToEdit).then((data) => {
 
             if (!data) {
@@ -189,11 +209,29 @@ const makeController = {
                 return
             }
 
-            res.json({
-                message: "Make Successfully Edited",
-                status: true,
-                data: MakeToEdit
-            })
+
+            productModel.updateMany(
+                { model: { $regex: new RegExp(MakeToEdit?.oldName, 'i') } }, // Filter to match documents with oldDepartmentName (case-insensitive)
+                { $set: { model: MakeToEdit?.newName?.toString()?.toLowerCase() } }
+            ).then((result) => {
+
+                console.log(result, 'result')
+
+                res.json({
+                    message: "Model Successfully Edited",
+                    status: true,
+                    data: MakeToEdit
+                })
+            }).catch((error) => {
+                // Internal server error
+                res.json({
+                    message: "Internal Server Error",
+                    status: false
+                });
+            });
+
+
+
 
         }).catch((error) => {
 

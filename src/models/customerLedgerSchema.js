@@ -53,6 +53,14 @@ const CustomerLedgerSchema = mongoose.Schema({
     invoiceType: {
         type: String
     },
+    openingquotationBalance: {
+        type: Number
+    },
+
+    openinginvoiceBalance: {
+        type: Number
+    },
+
     paymentMethod:
         { type: String },
     paid: { type: Number },
